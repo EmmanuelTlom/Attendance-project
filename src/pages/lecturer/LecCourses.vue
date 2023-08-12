@@ -674,7 +674,7 @@ onMounted(async () => {
   try {
     // loadingDelete.value = true;
     const response = await api.get(`courses`);
-    console.log(response);
+    // console.log(response);
     if (response.data.data) {
       // courses.value = response.data.data;
       const organizedCourses = [];
@@ -702,7 +702,7 @@ onMounted(async () => {
       });
 
       // organizedCourses now holds the structured data
-      console.log(organizedCourses);
+      // console.log(organizedCourses);
       courses.value = organizedCourses;
 
       // coursesByLevel is now organized by level and then by coursetype
@@ -750,7 +750,7 @@ const refreshPage = () => {
         });
 
         // organizedCourses now holds the structured data
-        console.log(organizedCourses);
+        // console.log(organizedCourses);
         courses.value = organizedCourses;
 
         // coursesByLevel is now organized by level and then by coursetype

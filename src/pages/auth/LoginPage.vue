@@ -171,7 +171,7 @@ const login = () => {
   api
     .post("login", data.value)
     .then((response) => {
-      console.log(response);
+      // console.log(response);
       store.setUserDetails(response.data);
       loading.value = false;
       data.value = {};
@@ -193,7 +193,7 @@ const login = () => {
       // if(response.data.data.role ==='')
     })
     .catch(({ response }) => {
-      console.log(response);
+      // console.log(response);
       loading.value = false;
       if (
         response.data.message ===

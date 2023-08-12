@@ -162,7 +162,7 @@ const filteredCourses = computed(() => {
     .filter((levelObj) => levelObj.coursetypes.length > 0);
 });
 
-console.log(filteredCourses);
+// console.log(filteredCourses);
 onMounted(async () => {
   try {
     // loadingDelete.value = true;
@@ -195,7 +195,7 @@ onMounted(async () => {
       });
 
       // organizedCourses now holds the structured data
-      console.log(organizedCourses);
+      // console.log(organizedCourses);
       courses.value = organizedCourses;
 
       // coursesByLevel is now organized by level and then by coursetype

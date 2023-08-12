@@ -1709,6 +1709,7 @@ onMounted(async () => {
     spin.value = false;
 
     const attendance = await api.get(`attendance/${route.params.slug}`);
+    // console.log(attendance);
 
     if (store.userdetails.role === "lecturer") {
       rows.value = attendance.data.data;
@@ -1727,7 +1728,6 @@ onMounted(async () => {
       studentsRow.value = attendancesWithPresent;
     }
 
-    // console.log(attendance);
     // console.log(attendancesWithPresent);
   } catch (error) {
     console.error(error);
