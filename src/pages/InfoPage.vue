@@ -50,11 +50,24 @@
               </div> -->
               <div class="input">
                 <div style="gap: 1rem" class="row no-wrap items-start">
+                  <!-- <img
+                    style="width: 64px; height: 64px; border-radius: 200px"
+                    src="../assets/avatar.svg"
+                    alt=""
+                  /> -->
                   <img
+                    style="width: 64px; height: 64px; border-radius: 200px"
+                    v-if="store.userdetails.avatar"
+                    :src="store.userdetails.avatar"
+                    alt=""
+                  />
+                  <img
+                    v-else
                     style="width: 64px; height: 64px; border-radius: 200px"
                     src="../assets/avatar.svg"
                     alt=""
                   />
+                  <!-- {{ data.avatar }} -->
                   <q-file
                     class="column profile_field justify-center items-center"
                     v-model="data.avatar"
@@ -157,16 +170,10 @@
 
 <script setup>
 import { ref, watch, onMounted } from "vue";
-let showA = ref("my acc");
-let order = ref(false);
-let billing = ref(false);
-let card_update = ref(false);
-let thankYou = ref(true);
 let model = ref(null);
 import { useMyAuthStore } from "src/stores/auth";
 let store = useMyAuthStore();
-let plan = ref({ settings: "monthly", method: "visa" });
-let data = ref({});
+let data = ref({ avatar: null });
 let password = ref({});
 let tab = ref("account");
 import { api } from "src/boot/axios";
@@ -209,7 +216,8 @@ const updateUser = () => {
         position: "top",
       });
       loadingUser.value = false;
-      data.value = {};
+      data.value = { avatar: null };
+      store.userdetails = response.data.data._doc;
     })
     .catch(({ response }) => {
       // console.log(response);
@@ -253,7 +261,7 @@ onMounted(async () => {
   try {
     // this.data
     // console.log(store.userdetails);
-    data.value = { ...store.userdetails };
+    data.value = { ...store.userdetails, avatar: null };
   } catch (error) {
     console.error(error);
   }

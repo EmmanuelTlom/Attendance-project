@@ -25,7 +25,7 @@
                   : 'courses'
               }`,
             }"
-            class="tag_desc"
+            class="tag_desc no"
             flat
             style="min-height: auto; padding: 0"
             no-caps
@@ -36,7 +36,7 @@
           <q-item
             style="min-height: auto; padding: 0"
             :to="{ name: 'mycourses', params: { slug: 'name' } }"
-            class="tag_desc"
+            class="tag_desc no"
             flat
             no-caps
             no-wrap
@@ -46,11 +46,11 @@
         </div>
 
         <div style="gap: 0.1rem" class="profile_img row no-wrap items-center">
-          <div class="tag_desc q-ml-sm">
+          <div class="tag_desc no q-ml-sm">
             {{ store.userdetails.firstName }}
             {{ store.userdetails.lastName }}
           </div>
-          <q-btn :to="{ name: 'info' }" style="min-height: auto" flat no-caps>
+          <q-btn style="min-height: auto" flat no-caps>
             <img
               style="width: 40px; height: 40px; border-radius: 200px"
               v-if="store.userdetails.avatar"
@@ -63,6 +63,32 @@
               src="../assets/avatar.svg"
               alt=""
             />
+
+            <q-menu>
+              <div class="q-py-sm">
+                <q-item :to="{ name: 'info' }">
+                  <!-- <img
+                    style="width: 20px; height: 20px"
+                    src="../assets/logout.svg"
+                    alt=""
+                    class="q-mr-sm"
+                  /> -->
+                  <i class="fa-regular q-mr-sm fa-user"></i>
+                  Profile settings
+                </q-item>
+
+                <q-separator class="" />
+                <q-item :to="{ name: 'logout' }">
+                  <img
+                    style="width: 20px; height: 20px"
+                    src="../assets/logout.svg"
+                    alt=""
+                    class="q-mr-sm"
+                  />
+                  Logout
+                </q-item>
+              </div>
+            </q-menu>
           </q-btn>
 
           <q-btn
@@ -156,8 +182,13 @@ export default {
   display: none;
 }
 
+.q-item {
+  white-space: nowrap;
+  min-height: auto;
+}
+
 @media (max-width: 800px) {
-  .q-btn.tag_desc {
+  .q-item.tag_desc {
     display: none;
   }
   .menu {

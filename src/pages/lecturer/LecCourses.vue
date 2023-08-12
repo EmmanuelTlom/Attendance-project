@@ -3,7 +3,7 @@
     <div v-if="spin" class="spinner">
       <q-spinner color="primary" size="3em" />
     </div>
-    <div v-if="!spin" class="container q-pt-lg">
+    <div v-if="!spin" class="container q-py-lg">
       <div class="top_area">
         <div class="row hold items-center no-wrap justify-between">
           <div class="left">
@@ -51,12 +51,19 @@
 
       <div v-if="courses.length" class="q-mt-lg level">
         <div style="gap: 0.5rem" class="row items-center no-wrap">
-          <div class="section_sub">500 level courses</div>
+          <div class="section_sub">Courses</div>
           <q-separator class="hr" />
           <q-btn @click="minimize = !minimize" flat no-caps>
             <img
+              v-if="minimize"
               style="width: 20px; height: 20px"
               src="../../assets/chev.svg"
+              alt=""
+            />
+            <img
+              v-else
+              style="width: 20px; height: 20px"
+              src="../../assets/chevd.svg"
               alt=""
             />
             Minimize
@@ -514,18 +521,6 @@ const refreshPage = () => {
   padding: 0;
 }
 
-.grid_wrapper {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin: 2rem 0;
-}
-
-.grid_wrapper > div:nth-child(1) {
-  width: 257px;
-}
-
 .grid.three {
   position: relative;
 }
@@ -553,10 +548,21 @@ const refreshPage = () => {
 .billing .offer {
   margin: 1rem 0 0;
 }
-
+.q-card {
+  width: 100%;
+}
 @media (max-width: 800px) {
   .container {
     padding: 2rem 0.5rem;
+  }
+
+  .offer {
+    margin: 0rem 0;
+  }
+}
+@media (max-width: 500px) {
+  .grid.three .trash {
+    top: 5%;
   }
 }
 </style>

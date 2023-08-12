@@ -42,6 +42,23 @@
               {{ courseIsAdded ? "Added" : "Add" }} to courses you
               {{ store.userdetails.role === "lecturer" ? "teach" : "offer" }}
             </q-btn>
+            <q-separator v-if="store.userdetails.role === 'lecturer'" />
+            <q-btn
+              :loading="loadingDel"
+              v-if="store.userdetails.role === 'lecturer'"
+              @click="deleteLecturerCourse()"
+              no-wrap
+              class="offer q-ma-none minimize delete"
+              flat
+              no-caps
+            >
+              <img
+                style="width: 16px; height: 16px"
+                src="../assets/del.svg"
+                alt=""
+              />
+              Delete course
+            </q-btn>
           </div>
         </div>
       </div>
@@ -116,20 +133,20 @@
                     <q-btn
                       flat
                       no-caps
-                      :class="dataYouSee === 'Attended' ? 'active' : ''"
+                      :class="dataYouSee === 'Present' ? 'active' : ''"
                       no-wrap
-                      @click="dataShowing('Attended')"
+                      @click="dataShowing('Present')"
                     >
-                      Attended
+                      Present
                     </q-btn>
                     <q-btn
-                      :class="dataYouSee === 'Missed' ? 'active' : ''"
+                      :class="dataYouSee === 'Absent' ? 'active' : ''"
                       flat
                       no-wrap
                       no-caps
-                      @click="dataShowing('Missed')"
+                      @click="dataShowing('Absent')"
                     >
-                      Missed
+                      Absent
                     </q-btn>
                   </div>
                 </div>
@@ -564,24 +581,24 @@
                   View all
                 </q-btn>
                 <q-btn
-                  @click="dataShowing('Attended')"
+                  @click="dataShowing('Present')"
                   style="padding: 5px"
                   flat
                   no-caps
-                  :class="dataYouSee === 'Attended' ? 'active' : ''"
+                  :class="dataYouSee === 'Present' ? 'active' : ''"
                   no-wrap
                 >
-                  Attended
+                  Present
                 </q-btn>
                 <q-btn
-                  @click="dataShowing('Missed')"
+                  @click="dataShowing('Absent')"
                   style="padding: 5px"
                   flat
-                  :class="dataYouSee === 'Missed' ? 'active' : ''"
+                  :class="dataYouSee === 'Absent' ? 'active' : ''"
                   no-wrap
                   no-caps
                 >
-                  Missed
+                  Absent
                 </q-btn>
               </div>
             </div>
@@ -929,9 +946,25 @@
 
     <q-dialog v-model="readQr">
       <q-card>
-        <div>
+        <div v-if="qua.platform.is.mobile">
           <qrcode-stream @detect="onDetect"></qrcode-stream>
           <!-- <p v-if="scannedData">Scanned Data: {{ scannedData }}</p> -->
+        </div>
+        <div class="text4 grey text-center" v-else>
+          Please open up this page on your phone to scan
+          <div class="div q-mt-sm">
+            <div class="text2 grey">Course URL</div>
+            <div class="copy">
+              <div class="copy_">{{ pageurl }}</div>
+              <q-btn @click="copy" no-wrap class="offer minimize" flat no-caps>
+                <img
+                  style="width: 16px; height: 16px"
+                  src="../assets/copy.svg"
+                  alt=""
+                />Copy
+              </q-btn>
+            </div>
+          </div>
         </div>
       </q-card>
     </q-dialog>
@@ -942,8 +975,16 @@
 import { copyToClipboard } from "quasar";
 import { api } from "src/boot/axios";
 import { ref, watch, onMounted, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { useQuasar } from "quasar";
+const qua = useQuasar();
+
+// console.log(qua.platform.is.desktop);
+// console.log(qua.platform.is.mobile);
+// console.log(qua.platform);
 let route = useRoute();
+let router = useRouter();
+
 import { useMyAuthStore } from "src/stores/auth";
 
 import { Notify, exportFile, Loading } from "quasar";
@@ -953,6 +994,7 @@ import VueQrcode from "vue-qrcode";
 let scanQr = ref(false);
 let pageurl = ref("");
 let Attendeeslist = ref(false);
+let loadingDel = ref(false);
 let attendanceData = ref(false);
 let loadingAdd = ref(false);
 let admin = ref(false);
@@ -1121,7 +1163,7 @@ let loading = ref(false);
 const sortedAttendanceData = computed(() => {
   if (dataYouSee.value === "View all") {
     return rows.value;
-  } else if (dataYouSee.value === "Attended") {
+  } else if (dataYouSee.value === "Present") {
     return rows.value.filter((data) => data.attendees.length > 0);
   } else {
     return rows.value.filter((data) => data.attendees.length < 1);
@@ -1130,7 +1172,7 @@ const sortedAttendanceData = computed(() => {
 const sortedSingleAttendanceData = computed(() => {
   if (dataYouSee.value === "View all") {
     return singleRows.value;
-  } else if (dataYouSee.value === "Attended") {
+  } else if (dataYouSee.value === "Present") {
     return singleRows.value.filter((data) => data.present !== true);
   } else {
     return singleRows.value.filter((data) => data.present === true);
@@ -1319,6 +1361,39 @@ onMounted(async () => {
   }
 });
 
+const deleteLecturerCourse = () => {
+  loadingDel.value = true;
+  api
+    .delete(`courses/${course.value._id}`)
+    .then((response) => {
+      // console.log(response);
+      Notify.create({
+        message: response.data.message,
+        color: "green",
+        position: "top",
+      });
+      loadingDel.value = false;
+      if (store.userdetails.role === "lecturer") {
+        router.replace({
+          name: "lecturer-courses",
+        });
+      } else {
+        router.replace({
+          name: "courses",
+        });
+      }
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      loadingDel.value = false;
+      Notify.create({
+        message: response.data.error,
+        color: "red",
+        position: "bottom",
+        actions: [{ icon: "close", color: "white" }],
+      });
+    });
+};
 const updateStudentCourse = () => {
   loadingAdd.value = true;
   api
@@ -1484,9 +1559,9 @@ const exportSingleTable = () => {
 
 .hero .card {
   position: absolute;
-  bottom: -50%;
+  top: 65%;
   left: 50%;
-  transform: translate(-50%, -20%);
+  transform: translate(-50%, 0%);
 }
 .right_side .text2.grey {
   margin-bottom: 0.5rem;
@@ -1595,33 +1670,17 @@ const exportSingleTable = () => {
     min-width: 700px;
   }
 }
-@media (max-width: 1050px) {
-  .hero .card {
-    bottom: -70%;
-  }
-}
-@media (max-width: 1000px) {
-  .hero .card {
-    bottom: -40%;
-  }
-}
-@media (max-width: 950px) {
-  .hero .card {
-    bottom: -30%;
-  }
-}
-@media (max-width: 600px) {
-  .hero .card {
-    bottom: -45%;
-  }
 
+@media (max-width: 600px) {
   .q-card {
     width: 100%;
   }
-}
-@media (max-width: 400px) {
+
+  .hero {
+    height: 30vh;
+  }
   .hero .card {
-    bottom: -50%;
+    transform: translate(-50%, -5%);
   }
 }
 </style>

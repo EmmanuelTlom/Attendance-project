@@ -75,6 +75,79 @@
         </q-carousel>
       </div>
     </div>
+    <q-dialog class="dialog" v-model="verify">
+      <div class="auth">
+        <q-card class="billing">
+          <div class="row q-mb-md justify-center">
+            <div class="checkcircle">
+              <img src="../../assets/message.svg" alt="" />
+            </div>
+          </div>
+
+          <div class="text-center q-mb-lg">
+            <div class="text3">Please check your email.</div>
+            <div class="text2 text-center grey scanQr">
+              We've sent a code to
+              <span class="text5"> {{ data.email }} </span>
+            </div>
+          </div>
+
+          <div
+            class="justify-center otp_wrap"
+            style="display: flex; flex-direction: row; gap: 0.5rem"
+          >
+            <v-otp-input
+              ref="otpInput"
+              v-model:value="bindModal"
+              input-classes="otp-input"
+              separator=" "
+              :num-inputs="4"
+              :should-auto-focus="true"
+              input-type="letter-numeric"
+              :conditionalClass="['one', 'two', 'three', 'four']"
+              :placeholder="['', '', '', '']"
+              @on-change="handleOnChange"
+              @on-complete="handleOnComplete"
+            />
+          </div>
+
+          <div class="text2 grey">
+            Didn’t get a code?
+            <q-btn
+              @click="resend"
+              flat
+              no-caps
+              style="padding: 0; text-decoration: underline"
+            >
+              Click to resend.
+            </q-btn>
+          </div>
+
+          <div
+            style="gap: 0.5rem"
+            class="total no-wrap row justify-between q-mt-md items-center"
+          >
+            <q-btn
+              @click="verify = false"
+              class="act_btn cancel full-width"
+              no-caps
+              flat
+            >
+              Cancel
+            </q-btn>
+            <q-btn
+              @click="Verify"
+              class="apply bg-primary full-width"
+              no-caps
+              :loading="loading"
+              flat
+            >
+              Verify
+            </q-btn>
+          </div>
+        </q-card>
+      </div>
+    </q-dialog>
   </q-layout>
 </template>
 
@@ -83,20 +156,22 @@ import { Notify } from "quasar";
 import { api } from "src/boot/axios";
 import { useMyAuthStore } from "src/stores/auth";
 import { ref, onMounted } from "vue";
+let verify = ref(false);
 let slide = ref(1);
+let code = ref("");
 import { useRouter } from "vue-router";
 let store = useMyAuthStore();
 let router = useRouter();
 let data = ref({});
 let togglePass = ref(false);
 let loading = ref(false);
-
+const bindModal = ref("");
 const login = () => {
   loading.value = true;
   api
     .post("login", data.value)
     .then((response) => {
-      // console.log(response);
+      console.log(response);
       store.setUserDetails(response.data);
       loading.value = false;
       data.value = {};
@@ -118,10 +193,54 @@ const login = () => {
       // if(response.data.data.role ==='')
     })
     .catch(({ response }) => {
+      console.log(response);
+      loading.value = false;
+      if (
+        response.data.message ===
+        "You cannot login because you have not verified your email."
+      ) {
+        verify.value = true;
+      }
+      // errors.value = response.data.errors;
+      Notify.create({
+        message: response.data.message,
+        color: "red",
+        position: "top",
+        actions: [{ icon: "close", color: "white" }],
+      });
+    });
+};
+
+const handleOnComplete = (value) => {
+  // console.log("OTP completed: ", value);
+  code.value = value;
+};
+
+const handleOnChange = (value) => {
+  // console.log("OTP changed: ", value);
+};
+
+const Verify = () => {
+  let dataReg = {
+    code: code.value,
+    email: data.value.email,
+  };
+  loading.value = true;
+  api
+    .post("register-verify", dataReg)
+    .then((response) => {
       // console.log(response);
       loading.value = false;
-
-      // errors.value = response.data.errors;
+      verify.value = false;
+      Notify.create({
+        message: response.data.message,
+        color: "green",
+        position: "top",
+      });
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      loading.value = false;
       Notify.create({
         message: response.data.error,
         color: "red",
@@ -130,23 +249,34 @@ const login = () => {
       });
     });
 };
-
-onMounted(async () => {
-  try {
-    // loadingDelete.value = true;
-    // const response = await api.get(`states`);
-    // const responseOrg = await api.get(`organizations`);
-    // const reponseUsers = await api.get(`members/all`);
-    // console.log(response);
-    // console.log(responseOrg);
-    // states.value = response.data.data;
-    // organizations.value = responseOrg.data.data;
-    // allMembers.value = reponseUsers.data.data;
-    // loadingDelete.value = false;
-  } catch (error) {
-    console.error(error);
-  }
-});
+const resend = () => {
+  let dataReg = {
+    email: data.value.email,
+  };
+  loading.value = true;
+  api
+    .post("register-verify-email", dataReg)
+    .then((response) => {
+      // console.log(response);
+      Notify.create({
+        message: "Code Resent",
+        color: "green",
+        position: "top",
+      });
+      loading.value = false;
+      verify.value = false;
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      loading.value = false;
+      Notify.create({
+        message: response.data.error,
+        color: "red",
+        position: "bottom",
+        actions: [{ icon: "close", color: "white" }],
+      });
+    });
+};
 </script>
 
 <style scoped>
@@ -164,12 +294,6 @@ onMounted(async () => {
 }
 .pricing::-webkit-scrollbar {
   display: none;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.example {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
 }
 
 .left {

@@ -591,12 +591,6 @@ const resend = () => {
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-.example {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
 .left {
   padding: 1rem 3rem 2rem;
   height: 100vh;

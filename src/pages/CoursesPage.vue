@@ -34,12 +34,19 @@
 
       <div v-if="courses.length" class="q-mt-lg level">
         <div style="gap: 0.5rem" class="row items-center no-wrap">
-          <div class="section_sub">500 level courses</div>
+          <div class="section_sub">Courses</div>
           <q-separator class="hr" />
           <q-btn @click="minimize = !minimize" flat no-caps>
             <img
+              v-if="minimize"
               style="width: 20px; height: 20px"
               src="../assets/chev.svg"
+              alt=""
+            />
+            <img
+              v-else
+              style="width: 20px; height: 20px"
+              src="../assets/chevd.svg"
               alt=""
             />
             Minimize
@@ -154,14 +161,6 @@ const refreshPage = () => {
 
 .level .q-btn {
   padding: 0;
-}
-
-.grid_wrapper {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin: 2rem 0;
 }
 
 .grid_wrapper > div:nth-child(1) {

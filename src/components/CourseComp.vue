@@ -38,7 +38,7 @@
             </div>
             <div class="text2 black lec">{{ course.venue }}</div>
           </div>
-          <div class="row each items-center">
+          <div class="row each items-start">
             <div style=".3rem" class="text2 row no-wrap items-center grey">
               <img
                 style="width: 16px; height: 16px"
@@ -211,6 +211,8 @@ const updateLecturerCourse = () => {
   align-items: center;
   align-self: stretch;
   background: #eaecf5;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
 }
 .card {
   border-radius: 8px;
@@ -239,7 +241,7 @@ const updateLecturerCourse = () => {
 .row.each {
   margin: 0.7rem 0;
 }
-.text2 {
+.text2.lec {
   font-weight: 700;
 }
 .lec {
@@ -248,5 +250,6 @@ const updateLecturerCourse = () => {
 
 .maindesc {
   color: #344054;
+  font-weight: 400;
 }
 </style>
