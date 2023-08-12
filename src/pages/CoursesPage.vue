@@ -32,37 +32,46 @@
         </div>
       </div>
 
-      <div v-if="courses.length" class="q-mt-lg level">
-        <div style="gap: 0.5rem" class="row items-center no-wrap">
-          <div class="section_sub">Courses</div>
-          <q-separator class="hr" />
-          <q-btn @click="minimize = !minimize" flat no-caps>
-            <img
-              v-if="minimize"
-              style="width: 20px; height: 20px"
-              src="../assets/chev.svg"
-              alt=""
-            />
-            <img
-              v-else
-              style="width: 20px; height: 20px"
-              src="../assets/chevd.svg"
-              alt=""
-            />
-            Minimize
-          </q-btn>
-        </div>
-
-        <div v-if="!minimize" class="grid_area">
-          <div class="grid_wrapper">
-            <div class="">
-              <div class="main_course_text">School courses</div>
-            </div>
-            <div v-for="course in filteredCourses" :key="course.id">
-              <CourseCompVue @courseAdded="refreshPage" :course="course" />
-            </div>
+      <div v-if="filteredCourses.length" class="q-mt-lg level">
+        <div v-for="(course, index) in filteredCourses" :key="index">
+          <div style="gap: 0.5rem" class="row items-center no-wrap">
+            <div class="section_sub">{{ course.level }} Courses</div>
+            <q-separator class="hr" />
+            <q-btn @click="minimize = !minimize" flat no-caps>
+              <img
+                v-if="minimize"
+                style="width: 20px; height: 20px"
+                src="../assets/chev.svg"
+                alt=""
+              />
+              <img
+                v-else
+                style="width: 20px; height: 20px"
+                src="../assets/chevd.svg"
+                alt=""
+              />
+              Minimize
+            </q-btn>
           </div>
-          <!-- <div class="grid_wrapper">
+
+          <div v-if="!minimize" class="grid_area">
+            <div class="grid_wrapper">
+              <div class="">
+                <div class="main_course_text">
+                  {{ course.coursetypes[0].name }}
+                </div>
+              </div>
+              <div
+                v-for="eachcourse in course.coursetypes[0].courses"
+                :key="eachcourse.id"
+              >
+                <CourseCompVue
+                  @courseAdded="refreshPage"
+                  :course="eachcourse"
+                />
+              </div>
+            </div>
+            <!-- <div class="grid_wrapper">
             <div class="">
               <div class="main_course_text">Departmental courses</div>
             </div>
@@ -76,6 +85,7 @@
               />
             </div>
           </div> -->
+          </div>
         </div>
       </div>
 
@@ -108,25 +118,88 @@ let store = useMyAuthStore();
 //     );
 //   }
 // });
-const filteredCourses = computed(() => {
-  return courses.value.filter((course) => {
-    const query = search.value.toLowerCase();
-    const matchesLecturer = course.lecturers.some(
-      (user) => user.firstName.toLowerCase() === query
-    );
-    const matchesName = course.title.toLowerCase().includes(query);
-    // const matchesLecturer = course.lecturer.name.toLowerCase().includes(query);
-
-    return matchesName || matchesLecturer;
+// Compute distinct levels and coursetypes
+const levels = computed(() => [
+  ...new Set(courses.value.map((course) => course.level)),
+]);
+const coursetypes = computed(() => {
+  const coursetypeSet = new Set();
+  courses.value.forEach((levelObj) => {
+    levelObj.coursetypes.forEach((coursetypeObj) => {
+      coursetypeSet.add(coursetypeObj.name);
+    });
   });
+  return [...coursetypeSet];
 });
+
+// Selected filter values
+const searchLecturer = ref("");
+const searchCourse = ref("");
+
+// Compute filtered courses
+const filteredCourses = computed(() => {
+  return courses.value
+    .map((levelObj) => {
+      const filteredCoursetypes = levelObj.coursetypes
+        .map((coursetypeObj) => {
+          const filteredCourses = coursetypeObj.courses.filter(
+            (course) =>
+              // console.log(course)
+              search.value === "" ||
+              course.lecturers.some((lecturer) =>
+                lecturer.firstName
+                  .toLowerCase()
+                  .includes(search.value.toLowerCase())
+              ) ||
+              search.value === "" ||
+              course.title.toLowerCase().includes(search.value.toLowerCase())
+          );
+          return { ...coursetypeObj, courses: filteredCourses };
+        })
+        .filter((coursetypeObj) => coursetypeObj.courses.length > 0);
+      return { ...levelObj, coursetypes: filteredCoursetypes };
+    })
+    .filter((levelObj) => levelObj.coursetypes.length > 0);
+});
+
+console.log(filteredCourses);
 onMounted(async () => {
   try {
     // loadingDelete.value = true;
     const response = await api.get(`courses`);
     // console.log(response);
     if (response.data.data) {
-      courses.value = response.data.data;
+      // courses.value = response.data.data;
+      const organizedCourses = [];
+
+      response.data.data.forEach((course) => {
+        const { level, courseType } = course;
+
+        let levelObj = organizedCourses.find((obj) => obj.level === level);
+        if (!levelObj) {
+          levelObj = { level, coursetypes: [] };
+          organizedCourses.push(levelObj);
+        }
+
+        // Find the coursetype object in the levelObj
+        let coursetypeObj = levelObj.coursetypes.find(
+          (obj) => obj.name === courseType
+        );
+        if (!coursetypeObj) {
+          coursetypeObj = { name: courseType, courses: [] };
+          levelObj.coursetypes.push(coursetypeObj);
+        }
+
+        // Add the course to the coursetypeObj
+        coursetypeObj.courses.push(course);
+      });
+
+      // organizedCourses now holds the structured data
+      console.log(organizedCourses);
+      courses.value = organizedCourses;
+
+      // coursesByLevel is now organized by level and then by coursetype
+      // console.log([coursesByLevel]);
     } else {
       courses.value = [];
     }
@@ -136,13 +209,48 @@ onMounted(async () => {
     console.error(error);
   }
 });
+
 const refreshPage = () => {
   loading.value = true;
   api
     .get("courses")
     .then((response) => {
       loading.value = false;
-      courses.value = response.data.data;
+      if (response.data.data) {
+        // courses.value = response.data.data;
+        const organizedCourses = [];
+
+        response.data.data.forEach((course) => {
+          const { level, courseType } = course;
+
+          let levelObj = organizedCourses.find((obj) => obj.level === level);
+          if (!levelObj) {
+            levelObj = { level, coursetypes: [] };
+            organizedCourses.push(levelObj);
+          }
+
+          // Find the coursetype object in the levelObj
+          let coursetypeObj = levelObj.coursetypes.find(
+            (obj) => obj.name === courseType
+          );
+          if (!coursetypeObj) {
+            coursetypeObj = { name: courseType, courses: [] };
+            levelObj.coursetypes.push(coursetypeObj);
+          }
+
+          // Add the course to the coursetypeObj
+          coursetypeObj.courses.push(course);
+        });
+
+        // organizedCourses now holds the structured data
+        // console.log(organizedCourses);
+        courses.value = organizedCourses;
+
+        // coursesByLevel is now organized by level and then by coursetype
+        // console.log([coursesByLevel]);
+      } else {
+        courses.value = [];
+      }
     })
     .catch(({ response }) => {
       // console.log(response);

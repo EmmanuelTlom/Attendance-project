@@ -60,7 +60,7 @@
             <img
               v-else
               style="width: 40px; height: 40px; border-radius: 200px"
-              src="../assets/avatar.svg"
+              src="../assets/usersvg.svg"
               alt=""
             />
 
@@ -185,6 +185,11 @@ export default {
 .q-item {
   white-space: nowrap;
   min-height: auto;
+  transition: all 0.5s ease-in-out;
+}
+.q-item:hover,
+.q-item:hover {
+  padding: 5px;
 }
 
 @media (max-width: 800px) {

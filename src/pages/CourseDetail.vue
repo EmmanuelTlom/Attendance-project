@@ -26,6 +26,7 @@
                 courseIsAdded ? 'offer minimize active' : 'offer minimize'
               "
               flat
+              style="width: fit-content"
               no-caps
             >
               <img
@@ -42,23 +43,43 @@
               {{ courseIsAdded ? "Added" : "Add" }} to courses you
               {{ store.userdetails.role === "lecturer" ? "teach" : "offer" }}
             </q-btn>
-            <q-separator v-if="store.userdetails.role === 'lecturer'" />
-            <q-btn
-              :loading="loadingDel"
+            <!-- <q-separator v-if="store.userdetails.role === 'lecturer'" /> -->
+            <div
               v-if="store.userdetails.role === 'lecturer'"
-              @click="deleteLecturerCourse()"
-              no-wrap
-              class="offer q-ma-none minimize delete"
-              flat
-              no-caps
+              style="gap: 1rem"
+              class="row items-center no-wrap"
             >
-              <img
-                style="width: 16px; height: 16px"
-                src="../assets/del.svg"
-                alt=""
-              />
-              Delete course
-            </q-btn>
+              <q-btn
+                :loading="loadingEdit"
+                @click="handleEdit"
+                no-wrap
+                class="offer q-ma-none minimize edit"
+                flat
+                no-caps
+              >
+                <img
+                  style="width: 16px; height: 16px"
+                  src="../assets/pen.svg"
+                  alt=""
+                />
+                Edit course
+              </q-btn>
+              <q-btn
+                :loading="loadingDel"
+                @click="deleteLecturerCourse()"
+                no-wrap
+                class="offer q-ma-none minimize delete"
+                flat
+                no-caps
+              >
+                <img
+                  style="width: 16px; height: 16px"
+                  src="../assets/del.svg"
+                  alt=""
+                />
+                Delete course
+              </q-btn>
+            </div>
           </div>
         </div>
       </div>
@@ -174,6 +195,7 @@
               <div class="auth">
                 <div class="">
                   <q-table
+                    v-if="store.userdetails.role === 'lecturer'"
                     :rows="sortedAttendanceData"
                     :hide-header="mode === 'grid'"
                     :columns="columns"
@@ -317,6 +339,85 @@
                       >
                       </q-btn>
                     </template> -->
+                  </q-table>
+
+                  <q-table
+                    v-if="store.userdetails.role === 'student'"
+                    :rows="sortedStudentAttendanceData"
+                    :hide-header="mode === 'grid'"
+                    :columns="columns"
+                    row-key="investor"
+                    :filter="filter"
+                    class="sort_tables"
+                    :loading="loading"
+                    v-model:pagination="pagination"
+                    @request="onRequest"
+                  >
+                    <template v-slot:body-cell-date="props">
+                      <q-td class="text2 grey" :props="props">
+                        <div style="gap: 1rem" class="row items-center">
+                          <div>
+                            {{
+                              new Date(props.row.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                }
+                              )
+                            }},
+                          </div>
+                        </div>
+                      </q-td>
+                    </template>
+                    <template v-slot:body-cell-time="props">
+                      <q-td class="text2 grey" :props="props">
+                        <div style="gap: 1rem" class="row items-center">
+                          <div>
+                            {{
+                              new Date(props.row.createdAt).toLocaleTimeString(
+                                "en-US",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                }
+                              )
+                            }}
+                          </div>
+                        </div>
+                      </q-td>
+                    </template>
+                    <template v-slot:body-cell-status="props">
+                      <q-td :props="props">
+                        <!-- {{ props.row }} -->
+                        <div v-if="props.row.present" class="status present">
+                          <img
+                            style="width: 8px; height: 8px"
+                            src="../assets/dotsuccess.svg"
+                            alt=""
+                            class="q-mr-sm"
+                          />Present
+                        </div>
+                        <div v-if="!props.row.present" class="status absent">
+                          <img
+                            class="q-mr-sm"
+                            style="width: 8px; height: 8px"
+                            src="../assets/dotabsent.svg"
+                            alt=""
+                          />Absent
+                        </div>
+                      </q-td>
+                    </template>
+
+                    <template v-slot:no-data="{ message }">
+                      <div
+                        class="full-width row flex-center text-negative q-gutter-sm"
+                      >
+                        <span> {{ message }} </span>
+                      </div>
+                    </template>
                   </q-table>
                 </div>
               </div>
@@ -670,7 +771,7 @@
               <template v-slot:body-cell-status="props">
                 <q-td :props="props">
                   <!-- {{ props.row }} -->
-                  <div class="status present">
+                  <div v-if="!props.row.present" class="status present">
                     <img
                       style="width: 8px; height: 8px"
                       src="../assets/dotsuccess.svg"
@@ -678,17 +779,14 @@
                       class="q-mr-sm"
                     />Present
                   </div>
-                  <!-- <div
-                    v-if="props.row.status === 'Absent'"
-                    class="status absent"
-                  >
+                  <div v-if="props.row.present" class="status absent">
                     <img
                       class="q-mr-sm"
                       style="width: 8px; height: 8px"
                       src="../assets/dotabsent.svg"
                       alt=""
-                    />{{ props.row.status }}
-                  </div> -->
+                    />Absent
+                  </div>
                 </q-td>
               </template>
 
@@ -855,8 +953,8 @@
           </div>
           <div class="text5">QR code for today’s class</div>
           <div class="text2 grey">
-            To authorise transactions, please scan this QR code with your Google
-            Authenticator App and enter the verification code below.
+            To authorise students to mark attendance, they have to scan this QR
+            code below.
           </div>
           <q-btn @click="getQr = false" class="close" flat no-caps>
             <img src="../assets/circle.svg" alt="" />
@@ -943,17 +1041,282 @@
         </div>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="editCourse">
+      <q-card class="billing q-pa-md">
+        <form @submit.prevent="editLecturerCourse">
+          <div class="auth">
+            <div class="row q-pb-sm justify-between items-center">
+              <div class="text5">Create course</div>
 
+              <q-btn @click="editCourse = false" flat no-caps>
+                <img src="../assets/circle.svg" alt="" />
+              </q-btn>
+            </div>
+            <div class="grid">
+              <div class="input">
+                <label for="">Course code* </label>
+
+                <div class="input_wrap">
+                  <input
+                    v-model="edit.courseCode"
+                    placeholder="Course code "
+                    type="text"
+                  />
+                </div>
+              </div>
+              <div class="input">
+                <label for=""> Course title* </label>
+
+                <div class="input_wrap">
+                  <input
+                    v-model="edit.title"
+                    placeholder="Course title"
+                    type="text"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="input">
+              <label for=""> Venue* </label>
+
+              <div class="input_wrap">
+                <input v-model="edit.venue" placeholder="Venue" type="text" />
+              </div>
+            </div>
+            <div class="input">
+              <label for=""> Description </label>
+
+              <div class="input_wrap">
+                <textarea
+                  v-model="edit.description"
+                  placeholder="Enter a description"
+                  rows="5"
+                  cols="10"
+                />
+              </div>
+            </div>
+            <div class="input">
+              <label for=""> Department </label>
+
+              <div class="input_wrap">
+                <select
+                  class="text2 grey"
+                  required
+                  v-model="edit.department"
+                  name="department"
+                >
+                  <option value="" disabled selected>
+                    Select your department
+                  </option>
+                  <option
+                    v-for="(department, index) in departments
+                      .slice()
+                      .sort((a, b) => a.name.localeCompare(b.name))"
+                    :key="index"
+                    :value="department.name"
+                  >
+                    {{ department.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="input">
+              <label for=""> Level </label>
+
+              <div class="input_wrap">
+                <select v-model="edit.level" name="" class="text2 grey">
+                  <option value="" disabled selected>Select a level</option>
+                  <option value="100l">100L</option>
+                  <option value="200l">200L</option>
+                  <option value="300l">300L</option>
+                  <option value="400l">400L</option>
+                  <option value="500l">500L</option>
+                </select>
+              </div>
+            </div>
+            <div class="input">
+              <label for=""> Type </label>
+
+              <div class="input_wrap">
+                <select v-model="edit.courseType" class="text2 grey" name="">
+                  <option value="" disabled selected>Select a type</option>
+                  <option value="departmental">Departmental Course</option>
+                  <option value="school course">School Course</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="gap: 0.5rem" class="">
+              <div class="section_sub text-left">Class Schedule</div>
+            </div>
+            <div style="gap: 0.5rem" class="row items-center no-wrap">
+              <div class="text2 grey">Class times</div>
+              <q-separator class="hr" />
+            </div>
+            <!-- {{ edit.schedules }} -->
+            <div
+              v-for="(schedule, index) in edit.schedules"
+              :key="index"
+              class="grid three"
+            >
+              <q-btn
+                style="width: fit-content"
+                class="text-red trash"
+                no-caps
+                flat
+                v-if="edit.schedules.length > 1"
+                icon="fa-solid fa-trash"
+                @click="removeSchedule(index)"
+              >
+              </q-btn>
+              <div class="input">
+                <label for=""> Day of the week </label>
+
+                <div class="input_wrap">
+                  <select v-model="schedule.day" name="">
+                    <option value="Sunday">Sunday</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="input">
+                <label for=""> Start time</label>
+                <div class="copy">
+                  <div class="copy_">
+                    {{ schedule.startTime }}
+                    {{
+                      parseInt(schedule.startTime.split(":")[0]) < 12
+                        ? "AM"
+                        : "PM"
+                    }}
+                    <!-- {{ schedule.startHour }}:{{ schedule.startMinute }} -->
+                    <!-- <span>{{ `${startIsAM ? "Am" : "Pm"}` }}</span> -->
+                  </div>
+                  <q-btn no-wrap class="offer minimize" flat no-caps>
+                    <img
+                      style="width: 16px; height: 16px"
+                      src="../assets/clock.svg"
+                      alt=""
+                    />
+                    <q-popup-proxy
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-time v-model="schedule.startTime">
+                        <div class="row items-center justify-end">
+                          <q-btn
+                            v-close-popup
+                            label="Close"
+                            color="primary"
+                            flat
+                          />
+                        </div>
+                      </q-time>
+                    </q-popup-proxy>
+                  </q-btn>
+                </div>
+              </div>
+              <div class="input">
+                <label for=""> End time </label>
+                <div class="copy">
+                  <div class="copy_">
+                    {{ schedule.endTime }}
+                    {{
+                      parseInt(schedule.endTime.split(":")[0]) < 12
+                        ? "AM"
+                        : "PM"
+                    }}
+                    <!-- {{ schedule.start }}:{{ schedule.endMinute }} -->
+                    <!-- <span>{{ `${endIsAM ? "Am" : "Pm"}` }}</span> -->
+                  </div>
+                  <q-btn no-wrap class="offer minimize" flat no-caps>
+                    <img
+                      style="width: 16px; height: 16px"
+                      src="../assets/clock.svg"
+                      alt=""
+                    />
+                    <q-popup-proxy
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-time v-model="schedule.endTime">
+                        <div class="row items-center justify-end">
+                          <q-btn
+                            v-close-popup
+                            label="Close"
+                            color="primary"
+                            flat
+                          />
+                        </div>
+                      </q-time>
+                    </q-popup-proxy>
+                  </q-btn>
+                </div>
+              </div>
+            </div>
+            <div>
+              <q-btn
+                style="width: fit-content"
+                class="offer minimize"
+                flat
+                no-caps
+                @click="addSchedule"
+              >
+                <img
+                  style="width: 16px; height: 16px"
+                  src="../assets/carl.svg"
+                  alt=""
+                />Add another class time
+              </q-btn>
+            </div>
+            <div
+              style="gap: 0.5rem"
+              class="total no-wrap row justify-end q-mt-lg items-center"
+            >
+              <q-btn
+                type="submit"
+                style="width: 100%"
+                class="apply bg-primary"
+                no-caps
+                flat
+                :loading="loadingEdit"
+              >
+                Save
+              </q-btn>
+            </div>
+          </div>
+        </form>
+      </q-card>
+    </q-dialog>
     <q-dialog v-model="readQr">
       <q-card>
         <div v-if="qua.platform.is.mobile">
           <qrcode-stream @detect="onDetect"></qrcode-stream>
           <!-- <p v-if="scannedData">Scanned Data: {{ scannedData }}</p> -->
         </div>
-        <div class="text4 grey text-center" v-else>
-          Please open up this page on your phone to scan
+        <div v-else>
+          <div class="row q-mb-md justify-center">
+            <div class="checkcircle">
+              <img src="../assets/alertc.svg" alt="" />
+            </div>
+          </div>
+          <div class="text4 big grey text-center">
+            You can’t scan on desktop
+          </div>
+
+          <div class="text2 q-my-sm grey text-center">
+            Sorry you need to be on your phone to scan the QR code for this
+            class. Open the link on your phone to continue.
+          </div>
           <div class="div q-mt-sm">
-            <div class="text2 grey">Course URL</div>
             <div class="copy">
               <div class="copy_">{{ pageurl }}</div>
               <q-btn @click="copy" no-wrap class="offer minimize" flat no-caps>
@@ -964,6 +1327,21 @@
                 />Copy
               </q-btn>
             </div>
+          </div>
+
+          <div
+            style="gap: 0.5rem"
+            class="total no-wrap row justify-end q-mt-lg items-center"
+          >
+            <q-btn
+              style="width: 100%"
+              class="apply bg-primary"
+              no-caps
+              flat
+              @click="readQr = false"
+            >
+              OK
+            </q-btn>
           </div>
         </div>
       </q-card>
@@ -976,7 +1354,8 @@ import { copyToClipboard } from "quasar";
 import { api } from "src/boot/axios";
 import { ref, watch, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useQuasar } from "quasar";
+import { Notify, exportFile, Loading, useQuasar, Dialog } from "quasar";
+
 const qua = useQuasar();
 
 // console.log(qua.platform.is.desktop);
@@ -987,13 +1366,13 @@ let router = useRouter();
 
 import { useMyAuthStore } from "src/stores/auth";
 
-import { Notify, exportFile, Loading } from "quasar";
 import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
 let store = useMyAuthStore();
 import VueQrcode from "vue-qrcode";
 let scanQr = ref(false);
 let pageurl = ref("");
 let Attendeeslist = ref(false);
+let loadingEdit = ref(false);
 let loadingDel = ref(false);
 let attendanceData = ref(false);
 let loadingAdd = ref(false);
@@ -1003,8 +1382,21 @@ let addClass = ref(false);
 let getQr = ref(false);
 let downloadQR = ref(false);
 let selectStudent = ref(false);
+let editCourse = ref(false);
 let spin = ref(true);
 let data = ref({});
+let edit = ref({
+  schedules: [
+    {
+      day: "Monday",
+      startTime: "0:00",
+      endTime: "0:00",
+    },
+  ],
+
+  level: "",
+  courseType: "",
+});
 let model = ref("");
 let attendanceId = ref("");
 let dataYouSee = ref("View all");
@@ -1017,6 +1409,17 @@ let color = ref({ dark: "#000000ff", light: "#ffffffff" });
 let options = ref([]);
 const courseIsAdded = ref(false);
 
+const addSchedule = () => {
+  const newSchedule = {
+    day: "",
+    startTime: "",
+    endTime: "",
+  };
+  edit.value.schedules.push(newSchedule);
+};
+const removeSchedule = (index) => {
+  edit.value.schedules.splice(index, 1);
+};
 const columns = [
   {
     name: "date",
@@ -1100,65 +1503,10 @@ let loaders = ref({
   deleteBtn: [],
   save: [],
 });
-let rows = ref([
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Present",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-  // {
-  //   date: "22 Jan 2022",
-  //   status: "Absent",
-  //   time: "29:46",
-  // },
-]);
+let rows = ref([]);
 let selected = ref([]);
 let singleRows = ref([]);
+let studentsRow = ref([]);
 let loading = ref(false);
 const sortedAttendanceData = computed(() => {
   if (dataYouSee.value === "View all") {
@@ -1176,6 +1524,15 @@ const sortedSingleAttendanceData = computed(() => {
     return singleRows.value.filter((data) => data.present !== true);
   } else {
     return singleRows.value.filter((data) => data.present === true);
+  }
+});
+const sortedStudentAttendanceData = computed(() => {
+  if (dataYouSee.value === "View all") {
+    return studentsRow.value;
+  } else if (dataYouSee.value === "Present") {
+    return studentsRow.value.filter((data) => data.present === true);
+  } else {
+    return studentsRow.value.filter((data) => data.present !== true);
   }
 });
 const dataShowing = (data) => {
@@ -1239,7 +1596,7 @@ const viewList = (data) => {
   api
     .get(`attendance/single/${data._id}`)
     .then((response) => {
-      // console.log(response);
+      console.log(response);
       attendanceData.value = response.data.data;
       singleRows.value = response.data.data.attendees;
       Attendeeslist.value = true;
@@ -1353,45 +1710,157 @@ onMounted(async () => {
 
     const attendance = await api.get(`attendance/${route.params.slug}`);
 
-    rows.value = attendance.data.data;
+    if (store.userdetails.role === "lecturer") {
+      rows.value = attendance.data.data;
+    } else {
+      const attendancesWithPresent = attendance.data.data.map((attendance) => {
+        const isPresent = attendance.attendees.includes(store.userdetails._id);
+
+        return {
+          ...attendance,
+          present: isPresent,
+        };
+      });
+
+      // console.log(attendancesWithPresent);
+
+      studentsRow.value = attendancesWithPresent;
+    }
+
     // console.log(attendance);
-    // console.log(response);
+    // console.log(attendancesWithPresent);
   } catch (error) {
     console.error(error);
   }
 });
 
+const handleEdit = () => {
+  // console.log(course.value);
+  edit.value = { ...course.value };
+
+  edit.value.schedules.forEach((schedule) => {
+    const startTime = `${schedule.startHour}:${schedule.startMinute}`;
+    const endTime = `${schedule.endHour}:${schedule.endMinute}`;
+
+    schedule.startTime = startTime;
+    schedule.endTime = endTime;
+  });
+
+  // console.log(edit.value);
+  edit.value = { ...course.value };
+  editCourse.value = true;
+};
+
+// setEndTimeValue;
+
+const editLecturerCourse = () => {
+  loadingEdit.value = true;
+  let clonedObj = JSON.parse(JSON.stringify(edit.value));
+  clonedObj.schedules.forEach((obj) => {
+    const [startHour, startMinute] = obj.startTime.split(":");
+    const [endHour, endMinute] = obj.endTime.split(":");
+    obj.startHour = startHour;
+    obj.startMinute = startMinute;
+    obj.endHour = endHour;
+    obj.endMinute = endMinute;
+
+    delete obj.startTime;
+    delete obj.endTime;
+    delete obj.createdAt;
+    delete obj.updatedAt;
+    delete obj.__v;
+    delete obj._id;
+  }),
+    api
+      .put(`courses/${course.value._id}`, clonedObj)
+      .then((response) => {
+        // console.log(response);
+        loadingEdit.value = false;
+        edit.value = {
+          schedules: [
+            {
+              day: "Monday",
+              startTime: "0:00",
+              endTime: "0:00",
+            },
+          ],
+        };
+
+        editCourse.value = false;
+        Notify.create({
+          message: response.data.message,
+          color: "green",
+          position: "top",
+        });
+
+        getCourseagain();
+      })
+      .catch(({ response }) => {
+        // console.log(response);
+        loadingEdit.value = false;
+
+        // errors.value = response.data.errors;
+        Notify.create({
+          message: response.data.error,
+          color: "red",
+          position: "bottom",
+          actions: [{ icon: "close", color: "white" }],
+        });
+      });
+};
 const deleteLecturerCourse = () => {
-  loadingDel.value = true;
-  api
-    .delete(`courses/${course.value._id}`)
-    .then((response) => {
-      // console.log(response);
-      Notify.create({
-        message: response.data.message,
-        color: "green",
-        position: "top",
-      });
-      loadingDel.value = false;
-      if (store.userdetails.role === "lecturer") {
-        router.replace({
-          name: "lecturer-courses",
+  Dialog.create({
+    title: "Delete course",
+    message: "Please confirm you want to delete this course...",
+    ok: {
+      push: true,
+      label: "Delete",
+      color: "negative",
+    },
+    cancel: {
+      push: true,
+      color: "grey",
+    },
+    persistent: true,
+  })
+    .onOk(() => {
+      loadingDel.value = true;
+      api
+        .delete(`courses/${course.value._id}`)
+        .then((response) => {
+          // console.log(response);
+          Notify.create({
+            message: response.data.message,
+            color: "green",
+            position: "top",
+          });
+          loadingDel.value = false;
+          if (store.userdetails.role === "lecturer") {
+            router.replace({
+              name: "lecturer-courses",
+            });
+          } else {
+            router.replace({
+              name: "courses",
+            });
+          }
+        })
+        .catch(({ response }) => {
+          // console.log(response);
+          loadingDel.value = false;
+          Notify.create({
+            message: response.data.error,
+            color: "red",
+            position: "bottom",
+            actions: [{ icon: "close", color: "white" }],
+          });
         });
-      } else {
-        router.replace({
-          name: "courses",
-        });
-      }
     })
-    .catch(({ response }) => {
-      // console.log(response);
-      loadingDel.value = false;
-      Notify.create({
-        message: response.data.error,
-        color: "red",
-        position: "bottom",
-        actions: [{ icon: "close", color: "white" }],
-      });
+    .onCancel(() => {
+      // console.log('>>>> Cancel')
+    })
+    .onDismiss(() => {
+      // console.log('I am triggered on both OK and Cancel')
     });
 };
 const updateStudentCourse = () => {
@@ -1546,6 +2015,157 @@ const exportSingleTable = () => {
     });
   }
 };
+
+let departments = ref([
+  {
+    name: "Agricultural Economics",
+  },
+  {
+    name: "Architecture",
+  },
+  {
+    name: "Agricultural Extension",
+  },
+  {
+    name: "Animal Science and Technology",
+  },
+  {
+    name: "Crop Science and Technology",
+  },
+  {
+    name: "Fisheries and Aquaculture Technology",
+  },
+  {
+    name: "Forestry and Wildlife Technology",
+  },
+  {
+    name: "Soil Science and Technology",
+  },
+  {
+    name: "Biochemistry",
+  },
+  {
+    name: "Biology",
+  },
+  {
+    name: "Biotechnology",
+  },
+  {
+    name: "Microbiology",
+  },
+  {
+    name: "Forensic Science",
+  },
+  {
+    name: "Agricultural and Bioresources Engineering",
+  },
+  {
+    name: "Civil Engineering",
+  },
+  {
+    name: "Chemical Engineering",
+  },
+  {
+    name: "Electrical and Electronics Engineering",
+  },
+  {
+    name: "Food Science and technology",
+  },
+  {
+    name: "Material and Metallurgical Engineering",
+  },
+  {
+    name: "Mechanical Engineering",
+  },
+  {
+    name: "Mechatronic Engineering",
+  },
+  {
+    name: "Petroleum Engineering",
+  },
+  {
+    name: "Polymer and Textile Engineering",
+  },
+
+  {
+    name: "Building Technology",
+  },
+  {
+    name: "Environmental Technology",
+  },
+  {
+    name: "Quantity Surveying",
+  },
+  {
+    name: "Surveying and Geoinformatics",
+  },
+  {
+    name: "Urban and Regional Planning",
+  },
+  {
+    name: "Biomedical Technology",
+  },
+  {
+    name: "Dental Technology",
+  },
+  {
+    name: "Environmental Health Science",
+  },
+  {
+    name: "Optometry",
+  },
+  {
+    name: "Prosthetics and Orthotics",
+  },
+  {
+    name: "Public Health Technology",
+  },
+  {
+    name: "Computer Science",
+  },
+  {
+    name: "Cyber Security",
+  },
+  {
+    name: "Information Technology",
+  },
+  {
+    name: "Software Engineering",
+  },
+  {
+    name: "Financial Management Technology",
+  },
+  {
+    name: "Management Technology",
+  },
+  {
+    name: "Maritime Management Technology",
+  },
+  {
+    name: "Project Management Technology",
+  },
+  {
+    name: "Transport Management Technology",
+  },
+  {
+    name: "Chemistry",
+  },
+  {
+    name: "Geology",
+  },
+  {
+    name: "Mathematics",
+  },
+  {
+    name: "Physics",
+  },
+  {
+    name: "Science Laboratory Technology",
+  },
+  {
+    name: "Statistics",
+  },
+]);
 </script>
 
 <style lang="scss" scoped>
@@ -1561,6 +2181,7 @@ const exportSingleTable = () => {
   position: absolute;
   top: 65%;
   left: 50%;
+  min-width: 500px;
   transform: translate(-50%, 0%);
 }
 .right_side .text2.grey {
@@ -1603,6 +2224,11 @@ const exportSingleTable = () => {
   top: 2%;
   right: 2%;
 }
+@media (max-width: 1100px) {
+  .hero .card {
+    top: 50%;
+  }
+}
 @media (min-width: 1000px) {
   .q-card {
     min-width: 512px;
@@ -1616,8 +2242,9 @@ const exportSingleTable = () => {
 }
 .checkcircle {
   border-radius: 28px;
-  border: 8px solid #f9f5ff;
   background: #f4ebff;
+  border: 8px solid #fef3f2;
+  background: #fee4e2;
   width: 48px;
   height: 48px;
   display: flex;
@@ -1649,6 +2276,11 @@ const exportSingleTable = () => {
   font-weight: 500;
   line-height: 18px; /* 150% */
 }
+
+.section_sub {
+  text-align: left;
+}
+
 .status.present {
   color: #027a48;
 
@@ -1671,6 +2303,11 @@ const exportSingleTable = () => {
   }
 }
 
+@media (max-width: 800px) {
+  .hero .card {
+    min-width: 95%;
+  }
+}
 @media (max-width: 600px) {
   .q-card {
     width: 100%;

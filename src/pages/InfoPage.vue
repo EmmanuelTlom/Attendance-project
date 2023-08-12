@@ -64,7 +64,7 @@
                   <img
                     v-else
                     style="width: 64px; height: 64px; border-radius: 200px"
-                    src="../assets/avatar.svg"
+                    src="../assets/usersvg.svg"
                     alt=""
                   />
                   <!-- {{ data.avatar }} -->

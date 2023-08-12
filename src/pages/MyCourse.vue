@@ -56,26 +56,12 @@
         <div v-if="!minimize" class="grid_area">
           <div class="grid_wrapper">
             <div class="">
-              <div class="main_course_text">School courses</div>
+              <div class="main_course_text">My List</div>
             </div>
             <div v-for="course in filteredCourses" :key="course.id">
               <CourseCompVue @courseAdded="refreshPage" :course="course" />
             </div>
           </div>
-          <!-- <div class="grid_wrapper">
-            <div class="">
-              <div class="main_course_text">Departmental courses</div>
-            </div>
-            <div v-for="item in 3" :key="item.id">
-              <CourseCompVue
-                title="Computer information and geomatics"
-                lecturers="Dr. I.A Ayogu"
-                :saved="false"
-                location="CSC Software lab"
-                nextClass="Tuesday, 14:00 to 16:00"
-              />
-            </div>
-          </div> -->
         </div>
       </div>
 

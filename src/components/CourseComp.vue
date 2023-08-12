@@ -82,33 +82,33 @@
             </div>
           </div>
         </div>
-        <!-- {{ courseIsAdded }} -->
-        <!-- :class="saved === true ? 'offer minimize active' : 'offer minimize'" -->
-        <q-btn
-          :class="courseIsAdded ? 'offer minimize active' : 'offer minimize'"
-          flat
-          :loading="loading"
-          @click="
-            store.userdetails.role === 'lecturer'
-              ? updateLecturerCourse()
-              : updateStudentCourse()
-          "
-          no-caps
-        >
-          <img
-            v-if="!courseIsAdded"
-            style="width: 16px; height: 16px"
-            src="../assets/plus.svg"
-            alt=""
-          /><img
-            v-if="courseIsAdded"
-            style="width: 16px; height: 16px"
-            src="../assets/pcheck.svg"
-            alt=""
-          />
-          {{ courseIsAdded ? "Added" : "Add" }} to your list
-        </q-btn>
       </div>
+      <!-- {{ courseIsAdded }} -->
+      <!-- :class="saved === true ? 'offer minimize active' : 'offer minimize'" -->
+      <q-btn
+        :class="courseIsAdded ? 'offer minimize active' : 'offer minimize'"
+        flat
+        :loading="loading"
+        @click="
+          store.userdetails.role === 'lecturer'
+            ? updateLecturerCourse()
+            : updateStudentCourse()
+        "
+        no-caps
+      >
+        <img
+          v-if="!courseIsAdded"
+          style="width: 16px; height: 16px"
+          src="../assets/plus.svg"
+          alt=""
+        /><img
+          v-if="courseIsAdded"
+          style="width: 16px; height: 16px"
+          src="../assets/pcheck.svg"
+          alt=""
+        />
+        {{ courseIsAdded ? "Added" : "Add" }} to your list
+      </q-btn>
     </div>
   </div>
 </template>

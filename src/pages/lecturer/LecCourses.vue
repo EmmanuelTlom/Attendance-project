@@ -49,37 +49,46 @@
         </div>
       </div>
 
-      <div v-if="courses.length" class="q-mt-lg level">
-        <div style="gap: 0.5rem" class="row items-center no-wrap">
-          <div class="section_sub">Courses</div>
-          <q-separator class="hr" />
-          <q-btn @click="minimize = !minimize" flat no-caps>
-            <img
-              v-if="minimize"
-              style="width: 20px; height: 20px"
-              src="../../assets/chev.svg"
-              alt=""
-            />
-            <img
-              v-else
-              style="width: 20px; height: 20px"
-              src="../../assets/chevd.svg"
-              alt=""
-            />
-            Minimize
-          </q-btn>
-        </div>
-
-        <div v-if="!minimize" class="grid_area">
-          <div class="grid_wrapper">
-            <div class="">
-              <div class="main_course_text">School courses</div>
-            </div>
-            <div v-for="course in filteredCourses" :key="course.id">
-              <CourseCompVue @courseAdded="refreshPage" :course="course" />
-            </div>
+      <div v-if="filteredCourses.length" class="q-mt-lg level">
+        <div v-for="(course, index) in filteredCourses" :key="index">
+          <div style="gap: 0.5rem" class="row items-center no-wrap">
+            <div class="section_sub">{{ course.level }} Courses</div>
+            <q-separator class="hr" />
+            <q-btn @click="minimize = !minimize" flat no-caps>
+              <img
+                v-if="minimize"
+                style="width: 20px; height: 20px"
+                src="../../assets/chev.svg"
+                alt=""
+              />
+              <img
+                v-else
+                style="width: 20px; height: 20px"
+                src="../../assets/chevd.svg"
+                alt=""
+              />
+              Minimize
+            </q-btn>
           </div>
-          <!-- <div class="grid_wrapper">
+
+          <div v-if="!minimize" class="grid_area">
+            <div class="grid_wrapper">
+              <div class="">
+                <div class="main_course_text">
+                  {{ course.coursetypes[0].name }}
+                </div>
+              </div>
+              <div
+                v-for="eachcourse in course.coursetypes[0].courses"
+                :key="eachcourse.id"
+              >
+                <CourseCompVue
+                  @courseAdded="refreshPage"
+                  :course="eachcourse"
+                />
+              </div>
+            </div>
+            <!-- <div class="grid_wrapper">
             <div class="">
               <div class="main_course_text">Departmental courses</div>
             </div>
@@ -93,6 +102,7 @@
               />
             </div>
           </div> -->
+          </div>
         </div>
       </div>
 
@@ -156,6 +166,31 @@
               </div>
             </div>
             <div class="input">
+              <label for=""> Department </label>
+
+              <div class="input_wrap">
+                <select
+                  class="text2 grey"
+                  required
+                  v-model="data.department"
+                  name="department"
+                >
+                  <option value="" disabled selected>
+                    Select your department
+                  </option>
+                  <option
+                    v-for="(department, index) in departments
+                      .slice()
+                      .sort((a, b) => a.name.localeCompare(b.name))"
+                    :key="index"
+                    :value="department.name"
+                  >
+                    {{ department.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="input">
               <label for=""> Level </label>
 
               <div class="input_wrap">
@@ -182,7 +217,7 @@
             </div>
 
             <div style="gap: 0.5rem" class="">
-              <div class="section_sub text-left">Class times</div>
+              <div class="section_sub text-left">Class Schedule</div>
             </div>
             <div style="gap: 0.5rem" class="row items-center no-wrap">
               <div class="text2 grey">Class times</div>
@@ -357,6 +392,7 @@ let data = ref({
   ],
 
   level: "",
+  department: "",
   courseType: "",
 });
 
@@ -373,48 +409,218 @@ const removeSchedule = (index) => {
 };
 
 let courses = ref([]);
-// const courseIsAdded = computed(() => {
-//   const specificUser = store.userdetails._id;
-//   if (store.userdetails.role === "lecturer") {
-//     courses.value.some((course) =>
-//       course.lecturers.some((lecturer) => {
-//         console.log(lecturer);
-//       })
-//     );
-//     // return courses.value.some((course) =>
-//     //   course.lecturers.some((lecturer) => lecturer._id === specificUser)
-//     // );
-//   } else {
-//     return courses.value.some((course) =>
-//       course.students.some((student) => student._id === specificUser)
-//     );
-//   }
-// });
-const filteredCourses = computed(() => {
-  return courses.value.filter((course) => {
-    const query = search.value.toLowerCase();
-    const matchesLecturer = course.lecturers.some(
-      (user) => user.firstName.toLowerCase() === query
-    );
-    const matchesName = course.title.toLowerCase().includes(query);
-    // const matchesLecturer = course.lecturer.name.toLowerCase().includes(query);
 
-    return matchesName || matchesLecturer;
+let departments = ref([
+  {
+    name: "Agricultural Economics",
+  },
+  {
+    name: "Architecture",
+  },
+  {
+    name: "Agricultural Extension",
+  },
+  {
+    name: "Animal Science and Technology",
+  },
+  {
+    name: "Crop Science and Technology",
+  },
+  {
+    name: "Fisheries and Aquaculture Technology",
+  },
+  {
+    name: "Forestry and Wildlife Technology",
+  },
+  {
+    name: "Soil Science and Technology",
+  },
+  {
+    name: "Biochemistry",
+  },
+  {
+    name: "Biology",
+  },
+  {
+    name: "Biotechnology",
+  },
+  {
+    name: "Microbiology",
+  },
+  {
+    name: "Forensic Science",
+  },
+  {
+    name: "Agricultural and Bioresources Engineering",
+  },
+  {
+    name: "Civil Engineering",
+  },
+  {
+    name: "Chemical Engineering",
+  },
+  {
+    name: "Electrical and Electronics Engineering",
+  },
+  {
+    name: "Food Science and technology",
+  },
+  {
+    name: "Material and Metallurgical Engineering",
+  },
+  {
+    name: "Mechanical Engineering",
+  },
+  {
+    name: "Mechatronic Engineering",
+  },
+  {
+    name: "Petroleum Engineering",
+  },
+  {
+    name: "Polymer and Textile Engineering",
+  },
+
+  {
+    name: "Building Technology",
+  },
+  {
+    name: "Environmental Technology",
+  },
+  {
+    name: "Quantity Surveying",
+  },
+  {
+    name: "Surveying and Geoinformatics",
+  },
+  {
+    name: "Urban and Regional Planning",
+  },
+  {
+    name: "Biomedical Technology",
+  },
+  {
+    name: "Dental Technology",
+  },
+  {
+    name: "Environmental Health Science",
+  },
+  {
+    name: "Optometry",
+  },
+  {
+    name: "Prosthetics and Orthotics",
+  },
+  {
+    name: "Public Health Technology",
+  },
+  {
+    name: "Computer Science",
+  },
+  {
+    name: "Cyber Security",
+  },
+  {
+    name: "Information Technology",
+  },
+  {
+    name: "Software Engineering",
+  },
+  {
+    name: "Financial Management Technology",
+  },
+  {
+    name: "Management Technology",
+  },
+  {
+    name: "Maritime Management Technology",
+  },
+  {
+    name: "Project Management Technology",
+  },
+  {
+    name: "Transport Management Technology",
+  },
+  {
+    name: "Chemistry",
+  },
+  {
+    name: "Geology",
+  },
+  {
+    name: "Mathematics",
+  },
+  {
+    name: "Physics",
+  },
+  {
+    name: "Science Laboratory Technology",
+  },
+  {
+    name: "Statistics",
+  },
+]);
+
+// const filteredCourses = computed(() => {
+//   return courses.value.map((course) => {
+//     course.coursetypes[0].courses.filter((course) => {
+//       const query = search.value.toLowerCase();
+//       const matchesLecturer = course.lecturers.some(
+//         (user) => user.firstName.toLowerCase() === query
+//       );
+//       const matchesName = course.title.toLowerCase().includes(query);
+//       // const matchesLecturer = course.lecturer.name.toLowerCase().includes(query);
+
+//       return matchesName || matchesLecturer;
+//     });
+//   });
+// });
+// Compute distinct levels and coursetypes
+const levels = computed(() => [
+  ...new Set(courses.value.map((course) => course.level)),
+]);
+const coursetypes = computed(() => {
+  const coursetypeSet = new Set();
+  courses.value.forEach((levelObj) => {
+    levelObj.coursetypes.forEach((coursetypeObj) => {
+      coursetypeSet.add(coursetypeObj.name);
+    });
   });
+  return [...coursetypeSet];
+});
+
+// Selected filter values
+const searchLecturer = ref("");
+const searchCourse = ref("");
+
+// Compute filtered courses
+const filteredCourses = computed(() => {
+  return courses.value
+    .map((levelObj) => {
+      const filteredCoursetypes = levelObj.coursetypes
+        .map((coursetypeObj) => {
+          const filteredCourses = coursetypeObj.courses.filter(
+            (course) =>
+              // console.log(course)
+              search.value === "" ||
+              course.lecturers.some((lecturer) =>
+                lecturer.firstName
+                  .toLowerCase()
+                  .includes(search.value.toLowerCase())
+              ) ||
+              search.value === "" ||
+              course.title.toLowerCase().includes(search.value.toLowerCase())
+          );
+          return { ...coursetypeObj, courses: filteredCourses };
+        })
+        .filter((coursetypeObj) => coursetypeObj.courses.length > 0);
+      return { ...levelObj, coursetypes: filteredCoursetypes };
+    })
+    .filter((levelObj) => levelObj.coursetypes.length > 0);
 });
 const createCourseFCN = () => {
-  // clone.schedules.forEach((obj) => {
-  //   const [startHour, startMinute] = obj.startTime.split(":");
-  //   const [endHour, endMinute] = obj.endTime.split(":");
-  //   obj.startHour = startHour;
-  //   obj.startMinute = startMinute;
-  //   obj.endHour = endHour;
-  //   obj.endMinute = endMinute;
-
-  //   delete obj.startTime;
-  //   delete obj.endTime;
-  // }),
   let clonedObj = JSON.parse(JSON.stringify(data.value));
+  loading.value = true;
 
   clonedObj.schedules.forEach((obj) => {
     const [startHour, startMinute] = obj.startTime.split(":");
@@ -427,59 +633,80 @@ const createCourseFCN = () => {
     delete obj.startTime;
     delete obj.endTime;
   }),
-    //   console.log(data.value);
-    // console.log(clonedObj);
+    api
+      .post("courses", clonedObj)
+      .then((response) => {
+        // console.log(response);
+        loading.value = false;
+        data.value = {
+          schedules: [
+            {
+              day: "Monday",
+              startTime: "0:00",
+              endTime: "0:00",
+            },
+          ],
+        };
 
-    // let toSend = {
-    //   ...clonedObj,
-    //   schedules: clonedObj.schedules[0],
-    // };
+        createCourse.value = false;
+        Notify.create({
+          message: response.data.message,
+          color: "green",
+          position: "top",
+        });
 
-    (loading.value = true);
-  api
-    .post("courses", clonedObj)
-    .then((response) => {
-      // console.log(response);
-      loading.value = false;
-      data.value = {
-        schedules: [
-          {
-            day: "Monday",
-            startTime: "0:00",
-            endTime: "0:00",
-          },
-        ],
-      };
+        refreshPage();
+      })
+      .catch(({ response }) => {
+        // console.log(response);
+        loading.value = false;
 
-      createCourse.value = false;
-      Notify.create({
-        message: response.data.message,
-        color: "green",
-        position: "top",
+        // errors.value = response.data.errors;
+        Notify.create({
+          message: response.data.error,
+          color: "red",
+          position: "bottom",
+          actions: [{ icon: "close", color: "white" }],
+        });
       });
-
-      refreshPage();
-    })
-    .catch(({ response }) => {
-      // console.log(response);
-      loading.value = false;
-
-      // errors.value = response.data.errors;
-      Notify.create({
-        message: response.data.error,
-        color: "red",
-        position: "bottom",
-        actions: [{ icon: "close", color: "white" }],
-      });
-    });
 };
 onMounted(async () => {
   try {
     // loadingDelete.value = true;
     const response = await api.get(`courses`);
-    // console.log(response);
+    console.log(response);
     if (response.data.data) {
-      courses.value = response.data.data;
+      // courses.value = response.data.data;
+      const organizedCourses = [];
+
+      response.data.data.forEach((course) => {
+        const { level, courseType } = course;
+
+        let levelObj = organizedCourses.find((obj) => obj.level === level);
+        if (!levelObj) {
+          levelObj = { level, coursetypes: [] };
+          organizedCourses.push(levelObj);
+        }
+
+        // Find the coursetype object in the levelObj
+        let coursetypeObj = levelObj.coursetypes.find(
+          (obj) => obj.name === courseType
+        );
+        if (!coursetypeObj) {
+          coursetypeObj = { name: courseType, courses: [] };
+          levelObj.coursetypes.push(coursetypeObj);
+        }
+
+        // Add the course to the coursetypeObj
+        coursetypeObj.courses.push(course);
+      });
+
+      // organizedCourses now holds the structured data
+      console.log(organizedCourses);
+      courses.value = organizedCourses;
+
+      // coursesByLevel is now organized by level and then by coursetype
+      // console.log([coursesByLevel]);
     } else {
       courses.value = [];
     }
@@ -496,7 +723,41 @@ const refreshPage = () => {
     .get("courses")
     .then((response) => {
       loading.value = false;
-      courses.value = response.data.data;
+      if (response.data.data) {
+        // courses.value = response.data.data;
+        const organizedCourses = [];
+
+        response.data.data.forEach((course) => {
+          const { level, courseType } = course;
+
+          let levelObj = organizedCourses.find((obj) => obj.level === level);
+          if (!levelObj) {
+            levelObj = { level, coursetypes: [] };
+            organizedCourses.push(levelObj);
+          }
+
+          // Find the coursetype object in the levelObj
+          let coursetypeObj = levelObj.coursetypes.find(
+            (obj) => obj.name === courseType
+          );
+          if (!coursetypeObj) {
+            coursetypeObj = { name: courseType, courses: [] };
+            levelObj.coursetypes.push(coursetypeObj);
+          }
+
+          // Add the course to the coursetypeObj
+          coursetypeObj.courses.push(course);
+        });
+
+        // organizedCourses now holds the structured data
+        console.log(organizedCourses);
+        courses.value = organizedCourses;
+
+        // coursesByLevel is now organized by level and then by coursetype
+        // console.log([coursesByLevel]);
+      } else {
+        courses.value = [];
+      }
     })
     .catch(({ response }) => {
       // console.log(response);
@@ -519,17 +780,6 @@ const refreshPage = () => {
 
 .level .q-btn {
   padding: 0;
-}
-
-.grid.three {
-  position: relative;
-}
-
-.grid.three .trash {
-  position: absolute;
-  top: 12%;
-  right: 0;
-  font-size: 9px;
 }
 
 .right.auth {
@@ -558,11 +808,6 @@ const refreshPage = () => {
 
   .offer {
     margin: 0rem 0;
-  }
-}
-@media (max-width: 500px) {
-  .grid.three .trash {
-    top: 5%;
   }
 }
 </style>

@@ -39,6 +39,10 @@ body {
   font-family: customThin;
   src: url(../fonts/Gilroy/Gilroy-Thin.ttf);
 }
+@font-face {
+  font-family: customMedium;
+  src: url(../fonts/Gilroy/Gilroy-Medium.ttf);
+}
 
 // declare a class which applies it
 .my-font {
@@ -331,6 +335,17 @@ img {
   line-height: 20px; /* 142.857% */
 }
 
+.grid.three {
+  position: relative;
+}
+
+.grid.three .trash {
+  position: absolute;
+  top: 12%;
+  right: 0;
+  font-size: 9px;
+}
+
 .text2 {
   font-family: customRegular;
   font-size: 14px;
@@ -400,6 +415,14 @@ hr {
   /* Shadow/xs */
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
   color: #b42318;
+}
+.offer.edit {
+  border-radius: 8px;
+  border: 1px solid #7f56d9;
+  background: #7f56d9;
+  /* Shadow/xs */
+  color: #fff;
+  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
 }
 .time_date .q-date,
 .time_date .q-time {
@@ -473,6 +496,12 @@ hr {
 
 .text4.small {
   font-family: customRegular;
+  font-weight: 500;
+}
+.text4.big {
+  font-family: customMedium;
+  font-weight: 500;
+  font-size: 18px;
 }
 
 .editor .q-editor {
@@ -659,6 +688,10 @@ select:focus {
 }
 .grid.three {
   grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+}
+.grid.three .input_wrap {
+  height: 43.15px;
 }
 
 .grid .input {
@@ -1023,7 +1056,7 @@ span.badge {
   color: #344054;
 }
 .main_area {
-  margin-top: 10rem;
+  margin-top: 14rem;
 }
 .main_area .maindesc {
   font-weight: 500;
@@ -1265,12 +1298,14 @@ span.badge {
     font-size: 30px;
     line-height: 35px; /* 125% */
   }
-
+  .grid.three .trash {
+    top: 5%;
+  }
   .grid_wrapper > div:nth-child(1) {
     width: 100%;
   }
   .main_area {
-    margin-top: 7rem;
+    margin-top: 11rem;
   }
   .grid_wrapper .card {
     max-width: 100% !important;
