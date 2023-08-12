@@ -202,7 +202,7 @@ const updateUser = () => {
       },
     })
     .then((response) => {
-      console.log(response);
+      // console.log(response);
       Notify.create({
         message: response.data.message,
         color: "green",
@@ -212,7 +212,7 @@ const updateUser = () => {
       data.value = {};
     })
     .catch(({ response }) => {
-      console.log(response);
+      // console.log(response);
       loadingUser.value = false;
 
       // errors.value = response.data.errors;
@@ -229,7 +229,7 @@ const updatePassword = () => {
   api
     .put("user/change-password", password.value)
     .then((response) => {
-      console.log(response);
+      // console.log(response);
       Notify.create({
         message: response.data.message,
         color: "green",
@@ -239,7 +239,7 @@ const updatePassword = () => {
       password.value = {};
     })
     .catch(({ response }) => {
-      console.log(response);
+      // console.log(response);
       loading.value = false;
       Notify.create({
         message: response.data.error,
@@ -252,7 +252,7 @@ const updatePassword = () => {
 onMounted(async () => {
   try {
     // this.data
-    console.log(store.userdetails);
+    // console.log(store.userdetails);
     data.value = { ...store.userdetails };
   } catch (error) {
     console.error(error);

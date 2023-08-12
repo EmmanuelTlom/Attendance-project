@@ -1,22 +1,46 @@
 <template>
   <q-layout class="layout">
-    <div class="">
+    <div v-if="spin" class="spinner">
+      <q-spinner color="primary" size="3em" />
+    </div>
+    <div v-if="!spin" class="">
       <div class="hero">
         <div class="card text-center">
           <div class="top">
-            <div class="all_main">CSC 510</div>
+            <div class="all_main">{{ course.courseCode }}</div>
           </div>
 
           <div class="q-pa-sm">
             <div class="title maindesc">
-              Introduction to computer schematics
+              {{ course.title }}
             </div>
-            <q-btn no-wrap class="offer minimize" flat no-caps>
+            <q-btn
+              :loading="loadingAdd"
+              @click="
+                store.userdetails.role === 'lecturer'
+                  ? updateLecturerCourse()
+                  : updateStudentCourse()
+              "
+              no-wrap
+              :class="
+                courseIsAdded ? 'offer minimize active' : 'offer minimize'
+              "
+              flat
+              no-caps
+            >
               <img
+                v-if="!courseIsAdded"
                 style="width: 16px; height: 16px"
                 src="../assets/plus.svg"
                 alt=""
-              />Add to courses you offer
+              /><img
+                v-if="courseIsAdded"
+                style="width: 16px; height: 16px"
+                src="../assets/pcheck.svg"
+                alt=""
+              />
+              {{ courseIsAdded ? "Added" : "Add" }} to courses you
+              {{ store.userdetails.role === "lecturer" ? "teach" : "offer" }}
             </q-btn>
           </div>
         </div>
@@ -28,29 +52,23 @@
             <div class="q-my-lg">
               <div class="row items-center justify-between">
                 <div class="maindesc">Title</div>
-                <q-btn flat style="min-height: auto" icon="more_vert"> </q-btn>
+                <div></div>
+                <!-- <q-btn flat style="min-height: auto" icon="more_vert"> </q-btn> -->
               </div>
 
-              <div class="text2 grey">Introduction to computer schematics</div>
+              <div class="text2 grey">{{ course.title }}</div>
             </div>
             <div class="q-my-lg">
               <div class="maindesc desc">Description</div>
               <div class="text2 grey">
-                I'm a Product Designer based in Melbourne, Australia. I
-                specialise in UX/UI design, brand strategy, and Webflow
-                development. I'm always striving to grow and learn something new
-                and I don't take myself too seriously. <br />
-                <br />
-                I'm passionate about helping startups grow, improve their
-                customer experience, and to raise venture capital through good
-                design.
+                {{ course.description }}
               </div>
 
-              <div class="q-mt-md">
+              <!-- <div class="q-mt-md">
                 <q-btn flat no-caps style="padding: 0" class="text2 read">
                   Read more
                 </q-btn>
-              </div>
+              </div> -->
             </div>
 
             <div class="table_area">
@@ -58,7 +76,7 @@
                 <div>
                   <div class="row text5 items-center">
                     Attendance tracker
-                    <div class="f_crumb q-ml-sm">40 / 50</div>
+                    <!-- <div class="f_crumb q-ml-sm">40 / 50</div> -->
                   </div>
                   <div class="text2 grey">
                     Your personal record of your attendances
@@ -69,6 +87,7 @@
                     style="width: fit-content"
                     class="offer minimize"
                     flat
+                    @click="exportTable"
                     no-caps
                   >
                     <img
@@ -82,12 +101,36 @@
 
               <q-separator />
 
-              <div class="row row q-pa-sm btns items-center justify-center">
+              <div class="row q-pa-sm btns items-center justify-center">
                 <div class="">
                   <div class="three_btns">
-                    <q-btn flat no-wrap no-caps> View all </q-btn>
-                    <q-btn flat no-caps no-wrap> Attended </q-btn>
-                    <q-btn flat no-wrap no-caps> Missed </q-btn>
+                    <q-btn
+                      flat
+                      :class="dataYouSee === 'View all' ? 'active' : ''"
+                      no-wrap
+                      no-caps
+                      @click="dataShowing('View all')"
+                    >
+                      View all
+                    </q-btn>
+                    <q-btn
+                      flat
+                      no-caps
+                      :class="dataYouSee === 'Attended' ? 'active' : ''"
+                      no-wrap
+                      @click="dataShowing('Attended')"
+                    >
+                      Attended
+                    </q-btn>
+                    <q-btn
+                      :class="dataYouSee === 'Missed' ? 'active' : ''"
+                      flat
+                      no-wrap
+                      no-caps
+                      @click="dataShowing('Missed')"
+                    >
+                      Missed
+                    </q-btn>
                   </div>
                 </div>
 
@@ -101,8 +144,8 @@
                           alt=""
                         />
                         <input
-                          v-model="search"
-                          placeholder="Search for a course or lecturer"
+                          v-model="filter"
+                          placeholder="Search"
                           type="text"
                         />
                       </div>
@@ -114,7 +157,7 @@
               <div class="auth">
                 <div class="">
                   <q-table
-                    :rows="rows"
+                    :rows="sortedAttendanceData"
                     :hide-header="mode === 'grid'"
                     :columns="columns"
                     row-key="investor"
@@ -128,7 +171,16 @@
                       <q-td class="text2 grey" :props="props">
                         <div style="gap: 1rem" class="row items-center">
                           <div>
-                            {{ props.row.date }}
+                            {{
+                              new Date(props.row.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                }
+                              )
+                            }}
                           </div>
                         </div>
                       </q-td>
@@ -137,76 +189,95 @@
                       <q-td class="text2 grey" :props="props">
                         <div style="gap: 1rem" class="row items-center">
                           <div>
-                            {{ props.row.date }}
+                            {{
+                              new Date(props.row.createdAt).toLocaleTimeString(
+                                "en-US",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                }
+                              )
+                            }}
                           </div>
                         </div>
                       </q-td>
                     </template>
                     <template v-slot:body-cell-status="props">
-                      <q-td :props="props">
+                      <q-td
+                        v-if="store.userdetails.role !== 'lecturer'"
+                        :props="props"
+                      >
                         <!-- {{ props.row }} -->
-                        <div
-                          v-if="props.row.status === 'Present'"
-                          class="status present"
-                        >
+                        <div v-if="props.row.present" class="status present">
                           <img
                             style="width: 8px; height: 8px"
                             src="../assets/dotsuccess.svg"
                             alt=""
                             class="q-mr-sm"
-                          />{{ props.row.status }}
+                          />Present
                         </div>
-                        <div
-                          v-if="props.row.status === 'Absent'"
-                          class="status absent"
-                        >
+                        <div v-if="!props.row.present" class="status absent">
                           <img
                             class="q-mr-sm"
                             style="width: 8px; height: 8px"
                             src="../assets/dotabsent.svg"
                             alt=""
-                          />{{ props.row.status }}
+                          />Absent
                         </div>
                       </q-td>
-                      <q-td v-if="admin" :props="props">
-                        <!-- {{ props.row }} -->
+                      <q-td
+                        v-if="store.userdetails.role === 'lecturer'"
+                        :props="props"
+                      >
                         <div class="text2 grey">
-                          180 of 200 students present
+                          {{ props.row.attendees.length }} students present
                         </div>
+                        <!-- <div class="text2 grey">
+                          180 of 200 students present
+                        </div> -->
                       </q-td>
                     </template>
-                    <template v-if="admin" v-slot:body-cell-actions="props">
-                      <q-td :props="props">
+                    <template
+                      v-if="store.userdetails.role === 'lecturer'"
+                      v-slot:body-cell-actions="props"
+                    >
+                      <q-td class="" :props="props">
                         <div class="table_btn">
                           <q-btn
                             round
                             dense
                             flat
+                            @click="viewList(props.row)"
+                            class="text2 grey"
+                            no-caps
                             size="md"
                             :loading="loaders.save[props]"
                           >
                             <img
-                              style="width: 24px; height: 24px"
+                              style="width: 18px; height: 18px"
                               src="../assets/view.svg"
                               alt=""
                             />
                             View
-                            <q-tooltip> {{ props.row.name }}</q-tooltip>
                           </q-btn>
+                          |
                           <q-btn
                             round
                             dense
+                            no-caps
+                            @click="addStu(props.row)"
                             flat
-                            size="md"
+                            class="text2 grey q-pr-md"
+                            size="sm"
                             :loading="loaders.save[props]"
                           >
                             <img
-                              style="width: 24px; height: 24px"
+                              style="width: 18px; height: 18px"
                               src="../assets/plus.svg"
                               alt=""
                             />
                             Add
-                            <q-tooltip> {{ props.row.name }}</q-tooltip>
                           </q-btn>
                         </div>
                       </q-td>
@@ -219,6 +290,16 @@
                         <span> {{ message }} </span>
                       </div>
                     </template>
+                    <!-- <template v-slot:bottom>
+                      <q-btn
+                        v-if="store.userdetails.role === 'lecturer'"
+                        class="bg-white text-black addstudent"
+                        flat
+                        icon="add"
+                        @click="selectStudent = true"
+                      >
+                      </q-btn>
+                    </template> -->
                   </q-table>
                 </div>
               </div>
@@ -227,49 +308,119 @@
           <div class="right_side">
             <div class="div">
               <div class="text2 grey">QR Code</div>
-              <q-btn @click="scanQr = true" class="offer minimize" flat no-caps>
+              <q-btn
+                v-if="store.userdetails.role !== 'lecturer'"
+                @click="readQr = true"
+                class="offer minimize"
+                flat
+                no-caps
+              >
                 <img
                   style="width: 16px; height: 16px"
                   src="../assets/qr.svg"
                   alt=""
                 />Scan QR code
               </q-btn>
+              <q-btn
+                v-if="store.userdetails.role === 'lecturer'"
+                @click="generateQr"
+                class="offer minimize"
+                flat
+                :loading="loading"
+                no-caps
+              >
+                <img
+                  style="width: 16px; height: 16px"
+                  src="../assets/qr.svg"
+                  alt=""
+                />Generate QR code
+              </q-btn>
             </div>
 
             <q-separator />
             <div class="div">
               <div class="text2 grey">Location</div>
-              <div class="tag_desc">Software Lab 1</div>
+              <div class="tag_desc">{{ course.venue }}</div>
             </div>
             <q-separator />
             <div class="div">
               <div class="text2 grey">Schedule</div>
-              <div class="tag_desc">Tuesdays by 14:00 to 16:00</div>
-              <div class="tag_desc">Wednesdays by 15:00 to 16:00</div>
+              <div v-if="course.schedules">
+                <div v-if="course.schedules.length">
+                  <div
+                    v-for="(schedule, index) in course.schedules"
+                    :key="index"
+                    class="tag_desc"
+                  >
+                    {{ schedule.day }} by
+                    {{
+                      schedule.startHour < 10
+                        ? `0${schedule.startHour}`
+                        : `${schedule.startHour}`
+                    }}:{{
+                      schedule.startMinute < 10
+                        ? `0${schedule.startMinute}`
+                        : `${schedule.startMinute}`
+                    }}
+                    to
+                    {{
+                      schedule.endHour < 10
+                        ? `0${schedule.endHour}`
+                        : `${schedule.endHour}`
+                    }}:{{
+                      schedule.endMinute < 10
+                        ? `0${schedule.endMinute}`
+                        : `${schedule.endMinute}`
+                    }}
+                  </div>
+                </div>
+                <div v-else class="text2">
+                  This course does not have any schedules
+                </div>
+              </div>
+              <!-- <div class="tag_desc">Wednesdays by 15:00 to 16:00</div> -->
             </div>
 
             <q-separator />
 
-            <div class="div">
-              <div v-for="n in 4" :key="n" class="div_">
-                <div class="img">
-                  <img
-                    style="width: 56px; height: 56px; border-radius: 100%"
-                    src="../assets/avatar.svg"
-                    alt=""
-                  />
-                  <img
-                    style="width: 18px; height: 18px; border-radius: 100%"
-                    class="verify"
-                    src="../assets/verify.svg"
-                    alt=""
-                  />
-                </div>
-                <div class="details">
-                  <div class="text4">Jenny Wilson</div>
+            <div v-if="course.lecturers" class="div">
+              <div v-if="course.lecturers.length">
+                <div
+                  v-for="(lecturer, index) in course.lecturers"
+                  :key="index"
+                  class="div_"
+                >
+                  <div class="img">
+                    <img
+                      v-if="lecturer.avatar"
+                      style="width: 56px; height: 56px; border-radius: 100%"
+                      :src="lecturer.avatar"
+                      alt=""
+                    />
+                    <img
+                      v-else
+                      style="width: 56px; height: 56px; border-radius: 100%"
+                      src="../assets/usersvg.svg"
+                      alt=""
+                    />
+                    <img
+                      style="width: 18px; height: 18px; border-radius: 100%"
+                      class="verify"
+                      src="../assets/verify.svg"
+                      alt=""
+                    />
+                  </div>
+                  <div class="details">
+                    <div class="text4 small">
+                      {{ lecturer.firstName }} {{ lecturer.lastName }}
+                    </div>
 
-                  <div class="text2 grey comments">olivia@untitledui.com</div>
+                    <div class="text2 grey comments">{{ lecturer.email }}</div>
+                  </div>
                 </div>
+              </div>
+              <div v-else class="text2">
+                This course does not have any lecturers
               </div>
             </div>
 
@@ -278,8 +429,14 @@
             <div class="div">
               <div class="text2 grey">Course URL</div>
               <div class="copy">
-                <div class="copy_">attendie.com/csc504</div>
-                <q-btn no-wrap class="offer minimize" flat no-caps>
+                <div class="copy_">{{ pageurl }}</div>
+                <q-btn
+                  @click="copy"
+                  no-wrap
+                  class="offer minimize"
+                  flat
+                  no-caps
+                >
                   <img
                     style="width: 16px; height: 16px"
                     src="../assets/copy.svg"
@@ -344,15 +501,45 @@
           <div class="row q-pa-sm items-center justify-between">
             <div class="">
               Record for class that occured on
-              <span class="text5">Tuesday, Jan 25 2022</span>
+              <span class="text5">{{
+                new Date(attendanceData.schedule.createdAt).toLocaleDateString(
+                  "en-US",
+                  {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }
+                )
+              }}</span>
               between
-              <div class="text5">14:00 to 16:00</div>
+              <div class="text5">
+                {{
+                  attendanceData.schedule.startHour < 10
+                    ? `0${attendanceData.schedule.startHour}`
+                    : `${attendanceData.schedule.startHour}`
+                }}:{{
+                  attendanceData.schedule.startMinute < 10
+                    ? `0${attendanceData.schedule.startMinute}`
+                    : `${attendanceData.schedule.startMinute}`
+                }}
+                to
+                {{
+                  attendanceData.schedule.endHour < 10
+                    ? `0${attendanceData.schedule.endHour}`
+                    : `${attendanceData.schedule.endHour}`
+                }}:{{
+                  attendanceData.schedule.endMinute < 10
+                    ? `0${attendanceData.schedule.endMinute}`
+                    : `${attendanceData.schedule.endMinute}`
+                }}
+              </div>
             </div>
             <div>
               <q-btn
                 style="width: fit-content"
                 class="offer minimize"
                 flat
+                @click="exportSingleTable"
                 no-caps
               >
                 <img
@@ -366,13 +553,34 @@
           <div class="row row q-pa-sm btns items-center justify-center">
             <div class="">
               <div class="three_btns">
-                <q-btn style="padding: 5px" flat no-wrap no-caps>
+                <q-btn
+                  style="padding: 5px"
+                  flat
+                  :class="dataYouSee === 'View all' ? 'active' : ''"
+                  no-wrap
+                  no-caps
+                  @click="dataShowing('View all')"
+                >
                   View all
                 </q-btn>
-                <q-btn style="padding: 5px" flat no-caps no-wrap>
+                <q-btn
+                  @click="dataShowing('Attended')"
+                  style="padding: 5px"
+                  flat
+                  no-caps
+                  :class="dataYouSee === 'Attended' ? 'active' : ''"
+                  no-wrap
+                >
                   Attended
                 </q-btn>
-                <q-btn style="padding: 5px" flat no-wrap no-caps>
+                <q-btn
+                  @click="dataShowing('Missed')"
+                  style="padding: 5px"
+                  flat
+                  :class="dataYouSee === 'Missed' ? 'active' : ''"
+                  no-wrap
+                  no-caps
+                >
                   Missed
                 </q-btn>
               </div>
@@ -387,11 +595,7 @@
                       src="../assets/search.svg"
                       alt=""
                     />
-                    <input
-                      v-model="search"
-                      placeholder="Search for a course or lecturer"
-                      type="text"
-                    />
+                    <input v-model="filter2" placeholder="Search" type="text" />
                   </div>
                 </div>
               </div>
@@ -399,21 +603,21 @@
           </div>
           <div class="">
             <q-table
-              :rows="rows"
+              :rows="sortedSingleAttendanceData"
               :hide-header="mode === 'grid'"
-              :columns="columns"
+              :columns="columnsTwo"
               row-key="investor"
-              :filter="filter"
+              :filter="filter2"
               class="sort_tables"
               :loading="loading"
               v-model:pagination="pagination"
               @request="onRequest"
             >
-              <template v-slot:body-cell-date="props">
+              <template v-slot:body-cell-name="props">
                 <q-td class="text2 grey" :props="props">
                   <div style="gap: 1rem" class="row items-center">
                     <div>
-                      {{ props.row.date }}
+                      {{ props.row.firstName }} {{ props.row.lastName }}
                     </div>
                   </div>
                 </q-td>
@@ -422,7 +626,26 @@
                 <q-td class="text2 grey" :props="props">
                   <div style="gap: 1rem" class="row items-center">
                     <div>
-                      {{ props.row.date }}
+                      {{
+                        new Date(props.row.createdAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }
+                        )
+                      }},
+                      {{
+                        new Date(props.row.createdAt).toLocaleTimeString(
+                          "en-US",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          }
+                        )
+                      }}
                     </div>
                   </div>
                 </q-td>
@@ -430,18 +653,15 @@
               <template v-slot:body-cell-status="props">
                 <q-td :props="props">
                   <!-- {{ props.row }} -->
-                  <div
-                    v-if="props.row.status === 'Present'"
-                    class="status present"
-                  >
+                  <div class="status present">
                     <img
                       style="width: 8px; height: 8px"
                       src="../assets/dotsuccess.svg"
                       alt=""
                       class="q-mr-sm"
-                    />{{ props.row.status }}
+                    />Present
                   </div>
-                  <div
+                  <!-- <div
                     v-if="props.row.status === 'Absent'"
                     class="status absent"
                   >
@@ -451,7 +671,7 @@
                       src="../assets/dotabsent.svg"
                       alt=""
                     />{{ props.row.status }}
-                  </div>
+                  </div> -->
                 </q-td>
               </template>
 
@@ -625,15 +845,28 @@
             <img src="../assets/circle.svg" alt="" />
           </q-btn>
 
-          <div class="qr text-white">
-            <img src="../assets/qrcode.svg" alt="" />
+          <div ref="qrcode" class="qr text-white">
+            <vue-qrcode
+              type="image/png"
+              :color="color"
+              style="width: 128px; height: 128px"
+              :value="barcodeId"
+              @change="onDataUrlChange"
+            />
+            <!-- <img src="../assets/qrcode.svg" alt="" /> -->
           </div>
 
           <div
             style="gap: 0.5rem"
             class="total no-wrap row justify-end q-mt-lg items-center"
           >
-            <q-btn style="width: 100%" class="apply bg-primary" no-caps flat>
+            <q-btn
+              @click="downloadLink"
+              style="width: 100%"
+              class="apply bg-primary"
+              no-caps
+              flat
+            >
               <img
                 src="../assets/downwhite.svg"
                 style="width: 20px; height: 20px"
@@ -679,10 +912,26 @@
             style="gap: 0.5rem"
             class="total no-wrap row justify-end q-mt-lg items-center"
           >
-            <q-btn style="width: 100%" class="apply bg-primary" no-caps flat>
+            <q-btn
+              @click="addstudentToAttendance"
+              style="width: 100%"
+              class="apply bg-primary"
+              no-caps
+              :loading="loading"
+              flat
+            >
               Add
             </q-btn>
           </div>
+        </div>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="readQr">
+      <q-card>
+        <div>
+          <qrcode-stream @detect="onDetect"></qrcode-stream>
+          <!-- <p v-if="scannedData">Scanned Data: {{ scannedData }}</p> -->
         </div>
       </q-card>
     </q-dialog>
@@ -690,40 +939,42 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { copyToClipboard } from "quasar";
+import { api } from "src/boot/axios";
+import { ref, watch, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+let route = useRoute();
+import { useMyAuthStore } from "src/stores/auth";
+
+import { Notify, exportFile, Loading } from "quasar";
+import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
+let store = useMyAuthStore();
+import VueQrcode from "vue-qrcode";
 let scanQr = ref(false);
+let pageurl = ref("");
 let Attendeeslist = ref(false);
+let attendanceData = ref(false);
+let loadingAdd = ref(false);
 let admin = ref(false);
+let readQr = ref(false);
 let addClass = ref(false);
 let getQr = ref(false);
 let downloadQR = ref(false);
-let selectStudent = ref(true);
+let selectStudent = ref(false);
+let spin = ref(true);
 let data = ref({});
 let model = ref("");
+let attendanceId = ref("");
+let dataYouSee = ref("View all");
+let course = ref({});
 let multiple = ref([]);
 let search = ref("");
-let options = [
-  {
-    label: "Google",
-    value: 1,
-  },
-  {
-    label: "Facebook",
-    value: 2,
-  },
-  {
-    label: "Twitter",
-    value: 3,
-  },
-  {
-    label: "Apple",
-    value: 4,
-  },
-  {
-    label: "Oracle",
-    value: 5,
-  },
-];
+let barcodeId = ref("");
+let dataUrl = ref("");
+let color = ref({ dark: "#000000ff", light: "#ffffffff" });
+let options = ref([]);
+const courseIsAdded = ref(false);
+
 const columns = [
   {
     name: "date",
@@ -761,6 +1012,34 @@ const columns = [
     sortable: false,
   },
 ];
+const columnsTwo = [
+  {
+    name: "name",
+    required: true,
+    label: "Name",
+    align: "left",
+    field: "name",
+    // field: (row, index) => console.log(row, index),
+    sortable: true,
+  },
+
+  {
+    name: "time",
+    required: true,
+    label: "Timestamp",
+    align: "left",
+    field: "time",
+    sortable: true,
+  },
+  {
+    name: "status",
+    required: true,
+    label: "Presence",
+    align: "left",
+    field: "status",
+    sortable: true,
+  },
+];
 
 let pagination = ref({
   sortBy: "id",
@@ -769,6 +1048,7 @@ let pagination = ref({
   rowsPerPage: 10,
 });
 let filter = ref("");
+let filter2 = ref("");
 let curl = ref("");
 let separator = ref("");
 let mode = ref("list");
@@ -779,64 +1059,103 @@ let loaders = ref({
   save: [],
 });
 let rows = ref([
-  {
-    date: "22 Jan 2022",
-    status: "Present",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
-  {
-    date: "22 Jan 2022",
-    status: "Absent",
-    time: "29:46",
-  },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Present",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
+  // {
+  //   date: "22 Jan 2022",
+  //   status: "Absent",
+  //   time: "29:46",
+  // },
 ]);
 let selected = ref([]);
+let singleRows = ref([]);
 let loading = ref(false);
+const sortedAttendanceData = computed(() => {
+  if (dataYouSee.value === "View all") {
+    return rows.value;
+  } else if (dataYouSee.value === "Attended") {
+    return rows.value.filter((data) => data.attendees.length > 0);
+  } else {
+    return rows.value.filter((data) => data.attendees.length < 1);
+  }
+});
+const sortedSingleAttendanceData = computed(() => {
+  if (dataYouSee.value === "View all") {
+    return singleRows.value;
+  } else if (dataYouSee.value === "Attended") {
+    return singleRows.value.filter((data) => data.present !== true);
+  } else {
+    return singleRows.value.filter((data) => data.present === true);
+  }
+});
+const dataShowing = (data) => {
+  dataYouSee.value = data;
+};
+// function downloadLink(name, href) {
+//   const a = document.createElement("a");
+//   a.download = name;
+//   a.href = href;
+//   document.body.append();
+//   a.click();
+//   a.remove();
+// }
+const qrcode = ref(null);
+const downloadLink = () => {
+  let img = document.querySelector(".qr img").src;
+  // console.log(img);
+  const link = document.createElement("a");
+  link.href = img;
+  link.download = "qrcode.png";
+  link.click();
+};
 const onRequest = (props) => {
   loading.value = true;
   const url = ``;
@@ -852,6 +1171,305 @@ const onRequest = (props) => {
       loading.value = false;
       // rows.value = [];
     });
+};
+
+const copy = () => {
+  copyToClipboard(pageurl.value)
+    .then(() => {
+      Notify.create({
+        message: "Copied",
+        color: "green",
+        position: "top",
+      });
+    })
+    .catch(() => {
+      // fail
+      Notify.create({
+        message: "Failed",
+        color: "red",
+        position: "top",
+      });
+    });
+};
+const viewList = (data) => {
+  // console.log(data);
+  Loading.show();
+  api
+    .get(`attendance/single/${data._id}`)
+    .then((response) => {
+      // console.log(response);
+      attendanceData.value = response.data.data;
+      singleRows.value = response.data.data.attendees;
+      Attendeeslist.value = true;
+      Loading.hide();
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      Loading.hide();
+      Notify.create({
+        message: response.data.error,
+        color: "red",
+        position: "bottom",
+        actions: [{ icon: "close", color: "white" }],
+      });
+    });
+};
+const onDetect = (data) => {
+  // console.log(data);
+  Loading.show({ message: "Scanning" });
+
+  api
+    .put(`attendance/mark/${data[0].rawValue}`)
+    .then((response) => {
+      // console.log(response);
+      Notify.create({
+        message: response.data.message,
+        color: "green",
+        position: "top",
+      });
+      readQr.value = false;
+
+      Loading.hide();
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      Loading.hide();
+      Notify.create({
+        message: response.data.error,
+        color: "red",
+        position: "bottom",
+        actions: [{ icon: "close", color: "white" }],
+      });
+    });
+};
+const onDataUrlChange = (dataUrll) => {
+  dataUrl.value = dataUrll;
+};
+const generateQr = () => {
+  loading.value = true;
+  api
+    .post(`attendance/${course.value._id}`)
+    .then((response) => {
+      // console.log(response);
+      loading.value = false;
+      Notify.create({
+        message: response.data.message,
+        color: "green",
+        position: "top",
+      });
+
+      downloadQR.value = true;
+      barcodeId.value = response.data.data.barcodeId;
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      loading.value = false;
+      Notify.create({
+        message: response.data.error,
+        color: "red",
+        position: "bottom",
+        actions: [{ icon: "close", color: "white" }],
+      });
+    });
+};
+const getCourseagain = async () => {
+  try {
+    const response = await api.get(`courses/${route.params.slug}`);
+    course.value = response.data.data;
+    if (store.userdetails.role === "lecturer") {
+      courseIsAdded.value = course.value.lecturers.some(
+        (lecturers) => lecturers._id === store.userdetails._id
+      );
+    } else {
+      courseIsAdded.value = course.value.students.some(
+        (student) => student._id === store.userdetails._id
+      );
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+onMounted(async () => {
+  try {
+    pageurl.value = window.document.URL;
+    const response = await api.get(`courses/${route.params.slug}`);
+    course.value = response.data.data;
+    if (store.userdetails.role === "lecturer") {
+      courseIsAdded.value = course.value.lecturers.some(
+        (lecturers) => lecturers._id === store.userdetails._id
+      );
+    } else {
+      courseIsAdded.value = course.value.students.some(
+        (student) => student._id === store.userdetails._id
+      );
+    }
+    options.value = response.data.data.students.map((item) => ({
+      label: `${item.firstName} ${item.lastName}`,
+      value: item._id,
+    }));
+    spin.value = false;
+
+    const attendance = await api.get(`attendance/${route.params.slug}`);
+
+    rows.value = attendance.data.data;
+    // console.log(attendance);
+    // console.log(response);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+const updateStudentCourse = () => {
+  loadingAdd.value = true;
+  api
+    .put(`courses/toggle/student/${course.value._id}`)
+    .then((response) => {
+      // console.log(response);
+      Notify.create({
+        message: response.data.message,
+        color: "green",
+        position: "top",
+      });
+      loadingAdd.value = false;
+      getCourseagain();
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      loadingAdd.value = false;
+      Notify.create({
+        message: response.data.error,
+        color: "red",
+        position: "bottom",
+        actions: [{ icon: "close", color: "white" }],
+      });
+    });
+};
+const addStu = (data) => {
+  selectStudent.value = true;
+  // console.log(data);
+  attendanceId.value = data._id;
+};
+const addstudentToAttendance = () => {
+  // console.log(multiple.value);
+  if (multiple.value.length < 1) {
+    Notify.create({
+      message: "You have to selected any students",
+    });
+  } else {
+    let data = multiple.value.map((object) => object.value);
+    loading.value = true;
+
+    api
+      .put(`attendance/add/${attendanceId.value}`, {
+        studentIds: data,
+      })
+      .then((response) => {
+        // console.log(response);
+        Notify.create({
+          message: response.data.message,
+          color: "green",
+          position: "top",
+        });
+        loading.value = false;
+        selectStudent.value = false;
+      })
+      .catch(({ response }) => {
+        // console.log(response);
+        loading.value = false;
+        Notify.create({
+          message: response.data.error,
+          color: "red",
+          position: "bottom",
+          actions: [{ icon: "close", color: "white" }],
+        });
+      });
+  }
+};
+const updateLecturerCourse = () => {
+  loadingAdd.value = true;
+  api
+    .put(`courses/toggle/lecturer/${course.value._id}`)
+    .then((response) => {
+      // console.log(response);
+      Notify.create({
+        message: response.data.message,
+        color: "green",
+        position: "top",
+      });
+      loadingAdd.value = false;
+      getCourseagain();
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      loadingAdd.value = false;
+      Notify.create({
+        message: response.data.error,
+        color: "red",
+        position: "bottom",
+        actions: [{ icon: "close", color: "white" }],
+      });
+    });
+};
+function wrapCsvValue(val, formatFn) {
+  let formatted = formatFn !== void 0 ? formatFn(val) : val;
+  formatted =
+    formatted === void 0 || formatted === null ? "" : String(formatted);
+  formatted = formatted.split('"').join('""');
+  return `"${formatted}"`;
+}
+const exportTable = () => {
+  // naive encoding to csv format
+  const content = [columns.map((col) => wrapCsvValue(col.label))]
+    .concat(
+      rows.value.map((row) =>
+        columns
+          .map((col) =>
+            wrapCsvValue(
+              typeof col.field === "function"
+                ? col.field(row)
+                : row[col.field === void 0 ? col.name : col.field],
+              col.format
+            )
+          )
+          .join(",")
+      )
+    )
+    .join("\r\n");
+  const status = exportFile(`Attendance sheet`, content, "text/csv");
+  if (status !== true) {
+    Notify.create({
+      message: "Browser denied file download...",
+      color: "negative",
+      icon: "warning",
+    });
+  }
+};
+const exportSingleTable = () => {
+  // naive encoding to csv format
+  const content = [columnsTwo.map((col) => wrapCsvValue(col.label))]
+    .concat(
+      singleRows.value.map((row) =>
+        columnsTwo
+          .map((col) =>
+            wrapCsvValue(
+              typeof col.field === "function"
+                ? col.field(row)
+                : row[col.field === void 0 ? col.name : col.field],
+              col.format
+            )
+          )
+          .join(",")
+      )
+    )
+    .join("\r\n");
+  const status = exportFile(`Attendance sheet`, content, "text/csv");
+  if (status !== true) {
+    Notify.create({
+      message: "Browser denied file download...",
+      color: "negative",
+      icon: "warning",
+    });
+  }
 };
 </script>
 
@@ -915,6 +1533,12 @@ const onRequest = (props) => {
     min-width: 512px;
   }
 }
+.addstudent {
+  right: -3%;
+  top: 2%;
+  transform: translateY(-2%);
+  position: absolute;
+}
 .checkcircle {
   border-radius: 28px;
   border: 8px solid #f9f5ff;
@@ -925,6 +1549,14 @@ const onRequest = (props) => {
   justify-content: center;
   align-items: center;
   padding: 12px;
+}
+.copy .copy_ {
+  width: 100%;
+  padding: 0.5rem;
+  width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .downloadqr .checkcircle {
   border-radius: 28px;
@@ -960,7 +1592,7 @@ const onRequest = (props) => {
 
 @media (min-width: 1000px) {
   .list_card {
-    min-width: 600px;
+    min-width: 700px;
   }
 }
 @media (max-width: 1050px) {
@@ -981,6 +1613,10 @@ const onRequest = (props) => {
 @media (max-width: 600px) {
   .hero .card {
     bottom: -45%;
+  }
+
+  .q-card {
+    width: 100%;
   }
 }
 @media (max-width: 400px) {

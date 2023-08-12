@@ -1,8 +1,11 @@
 <template>
   <q-layout class="layout">
-    <div class="container q-pt-lg">
+    <div v-if="spin" class="spinner">
+      <q-spinner color="primary" size="3em" />
+    </div>
+    <div v-if="!spin" class="container q-pt-lg">
       <div class="top_area">
-        <div class="row items-center no-wrap justify-between">
+        <div class="row hold items-center no-wrap justify-between">
           <div class="left">
             <div class="all_main">Courses you teach</div>
             <div class="text2">
@@ -50,7 +53,7 @@
         <div style="gap: 0.5rem" class="row items-center no-wrap">
           <div class="section_sub">500 level courses</div>
           <q-separator class="hr" />
-          <q-btn flat no-caps>
+          <q-btn @click="minimize = !minimize" flat no-caps>
             <img
               style="width: 20px; height: 20px"
               src="../../assets/chev.svg"
@@ -60,22 +63,16 @@
           </q-btn>
         </div>
 
-        <div class="grid_area">
+        <div v-if="!minimize" class="grid_area">
           <div class="grid_wrapper">
             <div class="">
               <div class="main_course_text">School courses</div>
             </div>
-            <div v-for="item in 3" :key="item.id">
-              <CourseCompVue
-                title="Computer information and geomatics"
-                lecturers="Dr. I.A Ayogu"
-                location="CSC Software lab"
-                :saved="false"
-                nextClass="Tuesday, 14:00 to 16:00"
-              />
+            <div v-for="course in filteredCourses" :key="course.id">
+              <CourseCompVue @courseAdded="refreshPage" :course="course" />
             </div>
           </div>
-          <div class="grid_wrapper">
+          <!-- <div class="grid_wrapper">
             <div class="">
               <div class="main_course_text">Departmental courses</div>
             </div>
@@ -88,11 +85,11 @@
                 nextClass="Tuesday, 14:00 to 16:00"
               />
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
 
-      <div class="text-center q-ma-lg">
+      <div v-else class="text-center q-ma-lg">
         <div class="main_course_text">No courses yet</div>
       </div>
     </div>
@@ -155,11 +152,13 @@
               <label for=""> Level </label>
 
               <div class="input_wrap">
-                <select v-model="data.level" name="">
-                  <option value="Year1">Year one</option>
-                  <option value="Year2">Year two</option>
-                  <option value="Year3">Year three</option>
-                  <option value="Year4">Year four</option>
+                <select v-model="data.level" name="" class="text2 grey">
+                  <option value="" disabled selected>Select a level</option>
+                  <option value="100l">100L</option>
+                  <option value="200l">200L</option>
+                  <option value="300l">300L</option>
+                  <option value="400l">400L</option>
+                  <option value="500l">500L</option>
                 </select>
               </div>
             </div>
@@ -167,9 +166,10 @@
               <label for=""> Type </label>
 
               <div class="input_wrap">
-                <select v-model="data.courseType" name="">
-                  <option value="easy">Easy</option>
-                  <option value="hard">Hard</option>
+                <select v-model="data.courseType" class="text2 grey" name="">
+                  <option value="" disabled selected>Select a type</option>
+                  <option value="departmental">Departmental Course</option>
+                  <option value="school course">School Course</option>
                 </select>
               </div>
             </div>
@@ -181,7 +181,7 @@
               <div class="text2 grey">Class times</div>
               <q-separator class="hr" />
             </div>
-            {{ data }}
+            <!-- {{ data }} -->
             <div
               v-for="(schedule, index) in data.schedules"
               :key="index"
@@ -331,25 +331,26 @@
 import CourseCompVue from "src/components/CourseComp.vue";
 import { ref, onMounted, computed } from "vue";
 import { api } from "src/boot/axios";
-
+import { Notify } from "quasar";
+import { useMyAuthStore } from "src/stores/auth";
+let store = useMyAuthStore();
 let search = ref("");
-// let startTime = ref("");
-// let endTime = ref("");
+let curl = ref("");
 let createCourse = ref(false);
-// const startHour = computed(() => startTime.value.split(":")[0]);
-// const startMinute = computed(() => startTime.value.split(":")[1]);
-// const endHour = computed(() => endTime.value.split(":")[0]);
-// const endMinute = computed(() => endTime.value.split(":")[1]);
-// const startIsAM = computed(() => parseInt(startHour.value) < 12);
-// const endIsAM = computed(() => parseInt(endHour.value) < 12);
+let loading = ref(false);
+let spin = ref(true);
+let minimize = ref(false);
 let data = ref({
   schedules: [
     {
       day: "Monday",
-      startTime: "",
-      endTime: "",
+      startTime: "0:00",
+      endTime: "0:00",
     },
   ],
+
+  level: "",
+  courseType: "",
 });
 
 const addSchedule = () => {
@@ -363,8 +364,52 @@ const addSchedule = () => {
 const removeSchedule = (index) => {
   data.value.schedules.splice(index, 1);
 };
-const getarr = () => {
-  data.value.schedules.forEach((obj) => {
+
+let courses = ref([]);
+// const courseIsAdded = computed(() => {
+//   const specificUser = store.userdetails._id;
+//   if (store.userdetails.role === "lecturer") {
+//     courses.value.some((course) =>
+//       course.lecturers.some((lecturer) => {
+//         console.log(lecturer);
+//       })
+//     );
+//     // return courses.value.some((course) =>
+//     //   course.lecturers.some((lecturer) => lecturer._id === specificUser)
+//     // );
+//   } else {
+//     return courses.value.some((course) =>
+//       course.students.some((student) => student._id === specificUser)
+//     );
+//   }
+// });
+const filteredCourses = computed(() => {
+  return courses.value.filter((course) => {
+    const query = search.value.toLowerCase();
+    const matchesLecturer = course.lecturers.some(
+      (user) => user.firstName.toLowerCase() === query
+    );
+    const matchesName = course.title.toLowerCase().includes(query);
+    // const matchesLecturer = course.lecturer.name.toLowerCase().includes(query);
+
+    return matchesName || matchesLecturer;
+  });
+});
+const createCourseFCN = () => {
+  // clone.schedules.forEach((obj) => {
+  //   const [startHour, startMinute] = obj.startTime.split(":");
+  //   const [endHour, endMinute] = obj.endTime.split(":");
+  //   obj.startHour = startHour;
+  //   obj.startMinute = startMinute;
+  //   obj.endHour = endHour;
+  //   obj.endMinute = endMinute;
+
+  //   delete obj.startTime;
+  //   delete obj.endTime;
+  // }),
+  let clonedObj = JSON.parse(JSON.stringify(data.value));
+
+  clonedObj.schedules.forEach((obj) => {
     const [startHour, startMinute] = obj.startTime.split(":");
     const [endHour, endMinute] = obj.endTime.split(":");
     obj.startHour = startHour;
@@ -374,40 +419,42 @@ const getarr = () => {
 
     delete obj.startTime;
     delete obj.endTime;
-  });
+  }),
+    //   console.log(data.value);
+    // console.log(clonedObj);
 
-  console.log(data.value.schedules);
-};
-let courses = ref([]);
+    // let toSend = {
+    //   ...clonedObj,
+    //   schedules: clonedObj.schedules[0],
+    // };
 
-const createCourseFCN = () => {
-  loading.value = true;
+    (loading.value = true);
   api
-    .post("courses", data.value)
+    .post("courses", clonedObj)
     .then((response) => {
-      console.log(response);
-      store.setUserDetails(response.data);
+      // console.log(response);
       loading.value = false;
-      data.value = {};
+      data.value = {
+        schedules: [
+          {
+            day: "Monday",
+            startTime: "0:00",
+            endTime: "0:00",
+          },
+        ],
+      };
+
+      createCourse.value = false;
       Notify.create({
         message: response.data.message,
         color: "green",
         position: "top",
       });
-      if (response.data.data.role === "lecturer") {
-        router.replace({
-          name: "lecturer-courses",
-        });
-      } else {
-        router.replace({
-          name: "courses",
-        });
-      }
 
-      // if(response.data.data.role ==='')
+      refreshPage();
     })
     .catch(({ response }) => {
-      console.log(response);
+      // console.log(response);
       loading.value = false;
 
       // errors.value = response.data.errors;
@@ -423,18 +470,32 @@ onMounted(async () => {
   try {
     // loadingDelete.value = true;
     const response = await api.get(`courses`);
-    console.log(response);
+    // console.log(response);
     if (response.data.data) {
       courses.value = response.data.data;
     } else {
       courses.value = [];
     }
 
-    // loadingDelete.value = false;
+    spin.value = false;
   } catch (error) {
     console.error(error);
   }
 });
+
+const refreshPage = () => {
+  loading.value = true;
+  api
+    .get("courses")
+    .then((response) => {
+      loading.value = false;
+      courses.value = response.data.data;
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      loading.value = false;
+    });
+};
 </script>
 
 <style lang="scss" scoped>

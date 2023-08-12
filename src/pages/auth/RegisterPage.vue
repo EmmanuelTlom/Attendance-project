@@ -71,14 +71,28 @@
                   <label for=""> Department </label>
 
                   <div class="input_wrap">
-                    <select required v-model="data.department" name="">
-                      <option value="geology">Geology</option>
-                      <option value="geology">Arts</option>
-                      <option value="geology">Engineering</option>
+                    <select
+                      class="text2 grey"
+                      required
+                      v-model="data.department"
+                      name="department"
+                    >
+                      <option value="" disabled selected>
+                        Select your department
+                      </option>
+                      <option
+                        v-for="(department, index) in departments
+                          .slice()
+                          .sort((a, b) => a.name.localeCompare(b.name))"
+                        :key="index"
+                        :value="department.name"
+                      >
+                        {{ department.name }}
+                      </option>
                     </select>
                   </div>
                 </div>
-                <div class="input">
+                <!-- <div class="input">
                   <label for=""> Are you a </label>
 
                   <div class="input_wrap">
@@ -87,7 +101,7 @@
                       <option value="lecturer">Lecturer</option>
                     </select>
                   </div>
-                </div>
+                </div> -->
 
                 <div class="input">
                   <label v-if="setrole === 'student'" for="">
@@ -131,10 +145,15 @@
                     <input
                       v-model="data.password"
                       placeholder="Create a password"
-                      type="password"
+                      :type="!togglePass ? 'password' : 'text'"
                       required
                     />
-                    <q-btn flat icon="visibility"> </q-btn>
+                    <q-btn
+                      @click="togglePass = !togglePass"
+                      flat
+                      icon="visibility"
+                    >
+                    </q-btn>
                   </div>
                 </div>
 
@@ -159,7 +178,7 @@
 
                 <div class="login_btn">
                   <q-btn :loading="loading" type="submit" no-caps flat>
-                    Log in
+                    Sign up
                   </q-btn>
                 </div>
 
@@ -173,8 +192,20 @@
         </div>
       </div>
 
-      <div class="right">
-        <img src="../../assets/image.png" alt="" />
+      <div class="right auth">
+        <img v-if="setrole === 'student'" src="../../assets/stud.jpg" alt="" />
+        <q-carousel
+          v-if="setrole === 'lecturer'"
+          animated
+          v-model="slide"
+          arrows
+          :autoplay="10000"
+          navigation
+          infinite
+        >
+          <q-carousel-slide :name="1" img-src="../../assets/lec1.jpg" />
+          <q-carousel-slide :name="2" img-src="../../assets/lec2.jpg" />
+        </q-carousel>
       </div>
     </div>
 
@@ -191,7 +222,7 @@
             <div class="text3">Please check your email.</div>
             <div class="text2 text-center grey scanQr">
               We've sent a code to
-              <span class="text5"> olivia@untitledui.com </span>
+              <span class="text5"> {{ user.email }} </span>
             </div>
           </div>
 
@@ -261,12 +292,167 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 let router = useRouter();
 let setrole = ref("student");
-let data = ref({});
+let togglePass = ref(false);
+let data = ref({
+  department: "",
+});
 let user = ref({});
 let model = ref(null);
 let verify = ref(false);
+let slide = ref(1);
 let code = ref("");
 let loading = ref(false);
+
+let departments = ref([
+  {
+    name: "Agricultural Economics",
+  },
+  {
+    name: "Architecture",
+  },
+  {
+    name: "Agricultural Extension",
+  },
+  {
+    name: "Animal Science and Technology",
+  },
+  {
+    name: "Crop Science and Technology",
+  },
+  {
+    name: "Fisheries and Aquaculture Technology",
+  },
+  {
+    name: "Forestry and Wildlife Technology",
+  },
+  {
+    name: "Soil Science and Technology",
+  },
+  {
+    name: "Biochemistry",
+  },
+  {
+    name: "Biology",
+  },
+  {
+    name: "Biotechnology",
+  },
+  {
+    name: "Microbiology",
+  },
+  {
+    name: "Forensic Science",
+  },
+  {
+    name: "Agricultural and Bioresources Engineering",
+  },
+  {
+    name: "Civil Engineering",
+  },
+  {
+    name: "Chemical Engineering",
+  },
+  {
+    name: "Electrical and Electronics Engineering",
+  },
+  {
+    name: "Food Science and technology",
+  },
+  {
+    name: "Material and Metallurgical Engineering",
+  },
+  {
+    name: "Mechanical Engineering",
+  },
+  {
+    name: "Mechatronic Engineering",
+  },
+  {
+    name: "Petroleum Engineering",
+  },
+  {
+    name: "Polymer and Textile Engineering",
+  },
+
+  {
+    name: "Building Technology",
+  },
+  {
+    name: "Environmental Technology",
+  },
+  {
+    name: "Quantity Surveying",
+  },
+  {
+    name: "Surveying and Geoinformatics",
+  },
+  {
+    name: "Urban and Regional Planning",
+  },
+  {
+    name: "Biomedical Technology",
+  },
+  {
+    name: "Dental Technology",
+  },
+  {
+    name: "Environmental Health Science",
+  },
+  {
+    name: "Optometry",
+  },
+  {
+    name: "Prosthetics and Orthotics",
+  },
+  {
+    name: "Public Health Technology",
+  },
+  {
+    name: "Computer Science",
+  },
+  {
+    name: "Cyber Security",
+  },
+  {
+    name: "Information Technology",
+  },
+  {
+    name: "Software Engineering",
+  },
+  {
+    name: "Financial Management Technology",
+  },
+  {
+    name: "Management Technology",
+  },
+  {
+    name: "Maritime Management Technology",
+  },
+  {
+    name: "Project Management Technology",
+  },
+  {
+    name: "Transport Management Technology",
+  },
+  {
+    name: "Chemistry",
+  },
+  {
+    name: "Geology",
+  },
+  {
+    name: "Mathematics",
+  },
+  {
+    name: "Physics",
+  },
+  {
+    name: "Science Laboratory Technology",
+  },
+  {
+    name: "Statistics",
+  },
+]);
 // import VOtpInput from "vue3-otp-input";
 
 const bindModal = ref("");
@@ -276,59 +462,56 @@ const setVal = (value) => {
 };
 
 const handleOnComplete = (value) => {
-  console.log("OTP completed: ", value);
+  // console.log("OTP completed: ", value);
   code.value = value;
 };
 
 const handleOnChange = (value) => {
-  console.log("OTP changed: ", value);
+  // console.log("OTP changed: ", value);
 };
 const register = () => {
-  console.log("register");
+  let newData = {
+    ...data.value,
+    role: setrole.value,
+  };
+  // console.log("register");
   loading.value = true;
   const formData = new FormData();
-  for (var key in data.value) {
-    formData.append(key, data.value[key]);
+  for (var key in newData) {
+    formData.append(key, newData[key]);
   }
-  if (!data.value.avatar) {
-    Notify.create({
-      message: "Please upload an avatar",
-      color: "red",
-      position: "top",
-    });
-  } else {
-    loading.value = true;
-    api
-      .post("register", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        console.log(response);
-        user.value = response.data.data;
-        Notify.create({
-          message: response.data.message,
-          color: "green",
-          position: "top",
-        });
-        loading.value = false;
-        verify.value = true;
-        data.value = {};
-      })
-      .catch(({ response }) => {
-        console.log(response);
-        loading.value = false;
 
-        // errors.value = response.data.errors;
-        Notify.create({
-          message: response.data.error,
-          color: "red",
-          position: "bottom",
-          actions: [{ icon: "close", color: "white" }],
-        });
+  loading.value = true;
+  api
+    .post("register", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+    .then((response) => {
+      // console.log(response);
+      user.value = response.data.data;
+      Notify.create({
+        message: response.data.message,
+        color: "green",
+        position: "top",
       });
-  }
+      loading.value = false;
+      verify.value = true;
+      data.value = {};
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+      loading.value = false;
+
+      // errors.value = response.data.errors;
+      Notify.create({
+        message: response.data.error,
+        color: "red",
+        position: "bottom",
+        actions: [{ icon: "close", color: "white" }],
+      });
+    });
 };
 const Verify = () => {
   let data = {
@@ -339,7 +522,7 @@ const Verify = () => {
   api
     .post("register-verify", data)
     .then((response) => {
-      console.log(response);
+      // console.log(response);
       loading.value = false;
       verify.value = false;
       Notify.create({
@@ -352,7 +535,7 @@ const Verify = () => {
       });
     })
     .catch(({ response }) => {
-      console.log(response);
+      // console.log(response);
       loading.value = false;
       Notify.create({
         message: response.data.error,
@@ -370,7 +553,7 @@ const resend = () => {
   api
     .post("register-verify-email", data)
     .then((response) => {
-      console.log(response);
+      // console.log(response);
       Notify.create({
         message: "Code Resent",
         color: "green",
@@ -380,7 +563,7 @@ const resend = () => {
       verify.value = false;
     })
     .catch(({ response }) => {
-      console.log(response);
+      // console.log(response);
       loading.value = false;
       Notify.create({
         message: response.data.error,
@@ -401,7 +584,7 @@ const resend = () => {
   display: grid;
   height: 100vh;
   margin: 0 auto;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   grid-template-columns: 1fr 1fr;
 }
 .pricing::-webkit-scrollbar {
@@ -417,6 +600,9 @@ const resend = () => {
 .left {
   padding: 1rem 3rem 2rem;
   height: 100vh;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
   overflow: scroll;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */

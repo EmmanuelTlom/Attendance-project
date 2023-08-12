@@ -13,7 +13,7 @@
             </q-btn>
           </div>
         </div>
-        <div class="sectionMain_text">Sign up</div>
+        <div class="sectionMain_text">Login</div>
 
         <div class="q-mt-sm">
           <div class="auth">
@@ -40,9 +40,14 @@
                     <input
                       v-model="data.password"
                       placeholder="Enter your password"
-                      type="password"
+                      :type="!togglePass ? 'password' : 'text'"
                     />
-                    <q-btn flat icon="visibility"> </q-btn>
+                    <q-btn
+                      @click="togglePass = !togglePass"
+                      flat
+                      icon="visibility"
+                    >
+                    </q-btn>
                   </div>
                 </div>
 
@@ -62,8 +67,12 @@
         </div>
       </div>
 
-      <div class="right">
-        <img src="../../assets/image.png" alt="" />
+      <div class="right auth">
+        <q-carousel animated v-model="slide" arrows navigation infinite>
+          <q-carousel-slide :name="1" img-src="../../assets/lec1.jpg" />
+          <q-carousel-slide :name="2" img-src="../../assets/stud.jpg" />
+          <q-carousel-slide :name="3" img-src="../../assets/lec2.jpg" />
+        </q-carousel>
       </div>
     </div>
   </q-layout>
@@ -74,10 +83,12 @@ import { Notify } from "quasar";
 import { api } from "src/boot/axios";
 import { useMyAuthStore } from "src/stores/auth";
 import { ref, onMounted } from "vue";
+let slide = ref(1);
 import { useRouter } from "vue-router";
 let store = useMyAuthStore();
 let router = useRouter();
 let data = ref({});
+let togglePass = ref(false);
 let loading = ref(false);
 
 const login = () => {
@@ -85,7 +96,7 @@ const login = () => {
   api
     .post("login", data.value)
     .then((response) => {
-      console.log(response);
+      // console.log(response);
       store.setUserDetails(response.data);
       loading.value = false;
       data.value = {};
@@ -107,7 +118,7 @@ const login = () => {
       // if(response.data.data.role ==='')
     })
     .catch(({ response }) => {
-      console.log(response);
+      // console.log(response);
       loading.value = false;
 
       // errors.value = response.data.errors;
@@ -148,7 +159,7 @@ onMounted(async () => {
   height: 100vh;
   margin: 0 auto;
   align-items: center;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   grid-template-columns: 1fr 1fr;
 }
 .pricing::-webkit-scrollbar {
@@ -164,6 +175,11 @@ onMounted(async () => {
 .left {
   padding: 1rem 3rem 2rem;
   height: 100vh;
+  display: flex;
+  max-width: 600px;
+
+  flex-direction: column;
+  justify-content: center;
   overflow: scroll;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
@@ -238,6 +254,12 @@ onMounted(async () => {
   }
   .left {
     padding: 1rem 1rem 2rem;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
   }
   .grid {
     grid-template-columns: 1fr;

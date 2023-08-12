@@ -38,7 +38,7 @@ export default boot(({ app, store, router }) => {
   app.config.globalProperties.$store = loadStore;
 
   let auth = store.state.value.bsc;
-  console.log(auth);
+  // console.log(auth);
   // let auth = JSON.parse(localStorage.getItem("pinia_leegoluauth"));
 
   api.interceptors.response.use(
@@ -51,9 +51,9 @@ export default boot(({ app, store, router }) => {
       return response;
     },
     (e) => {
-      console.log(e);
+      // console.log(e);
       let status_code = !e.response || e.response.status;
-      console.log(status_code);
+      // console.log(status_code);
       if (status_code === 401) {
         // store.auth.setToken(null);
         // console.log("first");
@@ -94,7 +94,7 @@ export default boot(({ app, store, router }) => {
     // const store = app.config.globalProperties.$store;
 
     if (to.name === "logout") {
-      console.log(store);
+      // console.log(store);
       // store.bsc.logOut(store.bsc.userdetails);
       store.state.value.bsc.token = "";
       store.state.value.bsc.userdetails = {};

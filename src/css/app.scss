@@ -1,5 +1,5 @@
 // app global css in SCSS form
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
 * {
   margin: 0;
   padding: 0;
@@ -15,13 +15,29 @@ a {
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: customRegular;
   line-height: 1.4;
 }
 
 @font-face {
   font-family: customfont;
   src: url(../fonts/Gilroy/Gilroy-Bold.ttf);
+}
+@font-face {
+  font-family: customRegular;
+  src: url(../fonts/Gilroy/Gilroy-Regular.ttf);
+}
+@font-face {
+  font-family: customMedium;
+  src: url(../fonts/Gilroy/Gilroy-Medium.ttf);
+}
+@font-face {
+  font-family: customSemi;
+  src: url(../fonts/Gilroy/Gilroy-SemiBold.ttf);
+}
+@font-face {
+  font-family: customThin;
+  src: url(../fonts/Gilroy/Gilroy-Thin.ttf);
 }
 
 // declare a class which applies it
@@ -53,7 +69,7 @@ img {
 
 .main_text {
   color: #141c24;
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 48px;
   font-style: normal;
   font-weight: 600;
@@ -104,7 +120,7 @@ img {
     }
     .q-btn {
       color: #344051;
-      font-family: Inter;
+      font-family: customMedium;
       font-size: 16px;
       font-style: normal;
       padding: 0;
@@ -118,7 +134,7 @@ img {
       border-radius: 8px;
       padding: 10px 20px;
       color: white;
-      font-family: Inter;
+      font-family: customSemi;
       font-size: 14px;
       font-style: normal;
       font-weight: 600;
@@ -135,9 +151,13 @@ img {
   }
 }
 
+.header > div {
+  width: 100%;
+}
+
 .minimize {
   color: #667085;
-  font-family: "customfont";
+  font-family: customMedium;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -150,7 +170,7 @@ img {
 
 .toptext {
   color: #141c24;
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 48px;
   font-style: normal;
   font-weight: 600;
@@ -173,7 +193,7 @@ img {
 
 .maindesc {
   color: #344051;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 18px;
   font-style: normal;
   font-weight: 400;
@@ -188,7 +208,7 @@ img {
   color: #741fad;
   text-align: center;
   /* Paragraph S/Medium */
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -200,7 +220,7 @@ img {
 
 .sectionMain_text {
   color: #141c24;
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 36px;
   font-style: normal;
   font-weight: 600;
@@ -209,7 +229,7 @@ img {
 }
 .sectionMain_desc {
   color: #344051;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 18px;
   font-style: normal;
   font-weight: 400;
@@ -218,29 +238,34 @@ img {
 .section_sub {
   color: #141c24;
   text-align: center;
-  font-family: Inter;
+  font-family: customfont;
   font-size: 20px;
   font-style: normal;
   font-weight: 700;
   margin: 0.8rem 0;
   line-height: 28px; /* 140% */
 }
+
+.right.auth .q-carousel {
+  height: 100vh;
+}
 .section_sub_ {
   color: #344051;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
   line-height: 24px;
 }
 .section_sub_ span {
+  font-family: customfont;
   font-weight: 700;
 }
 .plain_btn {
   color: #1a75ff;
 
   /* Paragraph M/Semi Bold */
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -250,7 +275,7 @@ img {
 .welcome {
   color: #141c24;
   text-align: center;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 24px;
   font-style: normal;
   font-weight: 500;
@@ -260,7 +285,7 @@ img {
 .remember_check {
   color: #344051;
   /* Paragraph M/Medium */
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -286,7 +311,7 @@ img {
   border-radius: 8px;
   background: #9126d9;
   color: #fff;
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -297,7 +322,7 @@ img {
 
 .auth label {
   color: #344051;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -307,7 +332,7 @@ img {
 }
 
 .text2 {
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -322,11 +347,16 @@ img {
 }
 .text2.black.lec {
   color: #344054;
-  text-decoration-line: underline;
+  // text-decoration-line: underline;
 }
 .text2.read {
   color: #6941c6;
   font-weight: 500;
+}
+.q-item.q-router-link--active,
+.q-item--active {
+  color: #344054;
+  font-family: customfont;
 }
 
 hr {
@@ -382,7 +412,7 @@ hr {
 }
 .tag_desc {
   color: #344054;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -390,6 +420,7 @@ hr {
 }
 
 .tag_desc span {
+  font-family: customfont;
   font-weight: 700;
 }
 .q-btn.tag_desc {
@@ -424,11 +455,15 @@ hr {
 }
 .text4 {
   color: #414e62;
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 14px;
   font-style: normal;
   font-weight: 600;
   line-height: 20px; /* 142.857% */
+}
+
+.text4.small {
+  font-family: customRegular;
 }
 
 .editor .q-editor {
@@ -460,7 +495,7 @@ hr {
 
 .text5 {
   color: #101828;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 18px;
   font-style: normal;
   font-weight: 500;
@@ -480,7 +515,7 @@ hr {
 }
 .text3 {
   color: #141c24;
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -622,7 +657,7 @@ select:focus {
 }
 
 .no_acc {
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -634,7 +669,7 @@ span.badge {
   color: #0052cc;
   padding: 2px 8px;
   text-align: center;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 12px;
   font-style: normal;
   font-weight: 500;
@@ -650,7 +685,7 @@ span.badge {
 .or {
   color: #344051;
   text-align: center;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -685,7 +720,7 @@ span.badge {
   color: #344051;
 
   /* Paragraph M/Semi Bold */
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -705,7 +740,7 @@ span.badge {
   color: #1a75ff;
   text-align: right;
 
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 14px;
   font-style: normal;
   font-weight: 600;
@@ -750,7 +785,7 @@ span.badge {
 .btns_switch .q-btn {
   color: #637083;
   /* Paragraph M/Medium */
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -797,7 +832,7 @@ span.badge {
 
 .sort_tables th {
   color: #344051;
-  font-family: Inter;
+  font-family: customRegular;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -826,7 +861,7 @@ span.badge {
   padding: 8px 16px;
   color: #fff;
   /* Paragraph S/Semi Bold */
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 14px;
   font-style: normal;
   font-weight: 600;
@@ -842,7 +877,7 @@ span.badge {
 .all_main {
   color: #344054;
   /* Display sm/Bold */
-  font-family: "customfont";
+  font-family: customfont;
 
   font-size: 30px;
   font-style: normal;
@@ -856,7 +891,7 @@ span.badge {
   background: #f2f4f7;
   padding: 8px 16px;
   /* Paragraph S/Semi Bold */
-  font-family: Inter;
+  font-family: customSemi;
   font-size: 14px;
   font-style: normal;
   font-weight: 600;
@@ -1015,6 +1050,16 @@ span.badge {
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
 }
 
+.three_btns .q-btn.active {
+  background: #7f56d9;
+  color: #fff;
+}
+.spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
 .three_btns .q-btn:nth-child(2) {
   border-left: 1px solid #d0d5dd;
   border-right: 1px solid #d0d5dd;
@@ -1039,6 +1084,10 @@ span.badge {
   justify-content: center;
   align-items: center;
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+}
+
+.table_btn {
+  width: 100px;
 }
 
 .otp_wrap > div {
@@ -1129,6 +1178,11 @@ span.badge {
   .btn_toggle {
     margin-top: 2rem;
   }
+  .btns {
+    flex-wrap: wrap;
+    flex-direction: column;
+    margin-top: 1rem;
+  }
 }
 
 @media (max-width: 800px) {
@@ -1150,16 +1204,15 @@ span.badge {
 
   .main_wrap {
     grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
   }
+  // .main_wrap > div {
+  //   width: 90%;
+  // }
 
   .table_area .q-pa-sm {
     padding: 14px;
-  }
-
-  .btns {
-    flex-wrap: wrap;
-    flex-direction: column;
-    margin-top: 1rem;
   }
 
   .main_row > div {
@@ -1185,12 +1238,31 @@ span.badge {
     max-width: 100% !important;
   }
 
+  .auth .otp-input {
+    width: 40px !important;
+    height: 40px;
+    font-size: 28px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .grid.three {
+    grid-template-columns: 1fr;
+  }
+
   .main_course_text {
     font-size: 30px;
     line-height: 50px;
   }
 
-  .top_area .row {
+  .top_area .hold {
+    flex-direction: column;
+  }
+  .top_area > div {
+    flex-direction: column;
+  }
+  .top_area .right > div.row {
     flex-direction: column;
   }
 
@@ -1213,9 +1285,13 @@ span.badge {
   }
 
   .header {
-    padding: 0.5rem 1rem 1rem 1rem;
+    padding: 0.5rem;
   }
   .main_row {
     padding: 1rem;
+  }
+
+  .main_area {
+    padding: 0rem;
   }
 }

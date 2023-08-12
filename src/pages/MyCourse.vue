@@ -1,10 +1,13 @@
 <template>
   <q-layout class="layout">
-    <div class="container q-pt-lg">
+    <div v-if="spin" class="spinner">
+      <q-spinner color="primary" size="3em" />
+    </div>
+    <div v-if="!spin" class="container q-pt-lg">
       <div class="top_area">
         <div class="row items-center no-wrap justify-between">
           <div class="left">
-            <div class="all_main">All courses</div>
+            <div class="all_main">My courses</div>
             <div class="text2">
               List of all departmental and school courses for computer science.
             </div>
@@ -33,7 +36,7 @@
         <div style="gap: 0.5rem" class="row items-center no-wrap">
           <div class="section_sub">500 level courses</div>
           <q-separator class="hr" />
-          <q-btn flat no-caps>
+          <q-btn @click="minimize = !minimize" flat no-caps>
             <img
               style="width: 20px; height: 20px"
               src="../assets/chev.svg"
@@ -43,22 +46,16 @@
           </q-btn>
         </div>
 
-        <div class="grid_area">
+        <div v-if="!minimize" class="grid_area">
           <div class="grid_wrapper">
             <div class="">
               <div class="main_course_text">School courses</div>
             </div>
-            <div v-for="item in 3" :key="item.id">
-              <CourseCompVue
-                title="Computer information and geomatics"
-                lecturers="Dr. I.A Ayogu"
-                location="CSC Software lab"
-                :saved="false"
-                nextClass="Tuesday, 14:00 to 16:00"
-              />
+            <div v-for="course in filteredCourses" :key="course.id">
+              <CourseCompVue @courseAdded="refreshPage" :course="course" />
             </div>
           </div>
-          <div class="grid_wrapper">
+          <!-- <div class="grid_wrapper">
             <div class="">
               <div class="main_course_text">Departmental courses</div>
             </div>
@@ -71,29 +68,79 @@
                 nextClass="Tuesday, 14:00 to 16:00"
               />
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
-      <div class="text-center q-ma-lg">
+
+      <div v-else class="text-center q-ma-lg">
         <div class="main_course_text">No courses yet</div>
       </div>
+
+      <!-- {{ courses }} -->
     </div>
   </q-layout>
 </template>
 
 <script setup>
+import { ref, onMounted, computed } from "vue";
 import { api } from "src/boot/axios";
 import CourseCompVue from "src/components/CourseComp.vue";
+import { useMyAuthStore } from "src/stores/auth";
+import { Notify } from "quasar";
+let store = useMyAuthStore();
 let search = ref("");
-import { ref, onMounted } from "vue";
+let minimize = ref(false);
+let spin = ref(true);
+
 let courses = ref([]);
+// const courseIsAdded = computed(() => {
+//   const specificUser = store.userdetails._id;
+//   if (store.userdetails.role === "lecturer") {
+//     return courses.value.some((course) =>
+//       course.lecturers.some((student) => student._id === specificUser)
+//     );
+//   } else {
+//     return courses.value.some((course) =>
+//       course.students.some((student) => student._id === specificUser)
+//     );
+//   }
+// });
+const filteredCourses = computed(() => {
+  return courses.value.filter((course) => {
+    const query = search.value.toLowerCase();
+    const matchesLecturer = course.lecturers.some(
+      (user) => user.firstName.toLowerCase() === query
+    );
+    const matchesName = course.title.toLowerCase().includes(query);
+    // const matchesLecturer = course.lecturer.name.toLowerCase().includes(query);
+
+    return matchesName || matchesLecturer;
+  });
+});
 onMounted(async () => {
   try {
     // loadingDelete.value = true;
     const response = await api.get(`courses`);
-    console.log(response);
+    // console.log(response);
     if (response.data.data) {
-      courses.value = response.data.data;
+      const specificUser = store.userdetails._id;
+      const specificrole = store.userdetails.role;
+      // console.log(specificUser);
+      // courses.value = response.data.data.filter((course)=> );
+      if (specificrole === "lecturer") {
+        courses.value = response.data.data.filter((course) =>
+          course.lecturers.some((user) => user._id === specificUser)
+        );
+      } else {
+        courses.value = response.data.data.filter((course) =>
+          // course.students.some((user) => {
+          //   console.log(user);
+          // })
+          course.students.some((user) => user._id === specificUser)
+        );
+      }
+
+      spin.value = false;
     } else {
       courses.value = [];
     }
@@ -103,6 +150,41 @@ onMounted(async () => {
     console.error(error);
   }
 });
+
+// const setMini = () => {
+//   console.log("hey");
+//   console.log(minimize.value);
+//   minimize.value = !minimize.value;
+// };
+const refreshPage = () => {
+  api
+    .get("courses")
+    .then((response) => {
+      if (response.data.data) {
+        const specificUser = store.userdetails._id;
+        const specificrole = store.userdetails.role;
+        // console.log(specificUser);
+        // courses.value = response.data.data.filter((course)=> );
+        if (specificrole === "lecturer") {
+          courses.value = response.data.data.filter((course) =>
+            course.lecturers.some((user) => user._id === specificUser)
+          );
+        } else {
+          courses.value = response.data.data.filter((course) =>
+            // course.students.some((user) => {
+            //   console.log(user);
+            // })
+            course.students.some((user) => user._id === specificUser)
+          );
+        }
+      } else {
+        courses.value = [];
+      }
+    })
+    .catch(({ response }) => {
+      // console.log(response);
+    });
+};
 </script>
 
 <style lang="scss" scoped>

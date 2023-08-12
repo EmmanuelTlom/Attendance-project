@@ -7,6 +7,7 @@
   "private": true,
   "scripts": {
     "test": "echo \"No test specified\" && exit 0",
+    "icons": "icongenie generate -i Dot.png --skip-trim --theme-color",
     "dev": "quasar dev",
     "build": "quasar build"
   },
@@ -18,6 +19,8 @@
     "pinia-persists": "^1.2.0",
     "quasar": "^2.6.0",
     "vue": "^3.0.0",
+    "vue-qrcode": "^2.2.0",
+    "vue-qrcode-reader": "^5.2.0",
     "vue-router": "^4.0.0",
     "vue3-otp-input": "^0.4.1"
   },

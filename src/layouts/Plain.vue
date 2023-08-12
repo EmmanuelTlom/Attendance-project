@@ -4,7 +4,7 @@
 
     <!-- (Optional) The Header -->
     <q-header class="header">
-      <div class="row container items-center justify-between">
+      <div class="row items-center no-wrap justify-between">
         <div style="gap: 2rem; flex: 2" class="row items-center no-wrap">
           <div class="logo">
             <q-btn class="" flat no-wrap no-caps>
@@ -12,24 +12,29 @@
                 <div class="logo_img">
                   <img src="../assets/dot.svg" alt="" />
                 </div>
-                <div class="tag_desc q-ml-sm">
-                  {{ store.userdetails.firstName }}
-                  {{ store.userdetails.lastName }}
-                </div>
+                <div class="tag_desc q-ml-sm">Presence</div>
               </div>
             </q-btn>
           </div>
 
-          <q-btn
-            :to="{ name: 'courses' }"
+          <q-item
+            :to="{
+              name: `${
+                store.userdetails.role === 'lecturer'
+                  ? 'lecturer-courses'
+                  : 'courses'
+              }`,
+            }"
             class="tag_desc"
             flat
+            style="min-height: auto; padding: 0"
             no-caps
             no-wrap
           >
             All Courses
-          </q-btn>
-          <q-btn
+          </q-item>
+          <q-item
+            style="min-height: auto; padding: 0"
             :to="{ name: 'mycourses', params: { slug: 'name' } }"
             class="tag_desc"
             flat
@@ -37,12 +42,23 @@
             no-wrap
           >
             Your Courses
-          </q-btn>
+          </q-item>
         </div>
 
-        <div style="gap: 0.1rem" class="profile_img row items-center">
+        <div style="gap: 0.1rem" class="profile_img row no-wrap items-center">
+          <div class="tag_desc q-ml-sm">
+            {{ store.userdetails.firstName }}
+            {{ store.userdetails.lastName }}
+          </div>
           <q-btn :to="{ name: 'info' }" style="min-height: auto" flat no-caps>
             <img
+              style="width: 40px; height: 40px; border-radius: 200px"
+              v-if="store.userdetails.avatar"
+              :src="store.userdetails.avatar"
+              alt=""
+            />
+            <img
+              v-else
               style="width: 40px; height: 40px; border-radius: 200px"
               src="../assets/avatar.svg"
               alt=""

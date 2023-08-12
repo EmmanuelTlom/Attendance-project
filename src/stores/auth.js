@@ -14,7 +14,7 @@ export const useMyAuthStore = defineStore("bsc", {
     setUserDetails(data) {
       const token = data.data.userToken;
       const user = data.data;
-      console.log(data);
+      // console.log(data);
       localStorage.setItem("token", token);
       localStorage.setItem("userdet", JSON.stringify(user));
       this.userdetails = data.data;
