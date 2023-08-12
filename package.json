@@ -1,8 +1,8 @@
 {
   "name": "project-bsc",
   "version": "0.0.1",
-  "description": "BSc project",
-  "productName": "BSc project",
+  "description": "Project Presence",
+  "productName": "Project Presence",
   "author": "emmanueltlom <nwabuodafiemmanuel@gmail.com>",
   "private": true,
   "scripts": {
