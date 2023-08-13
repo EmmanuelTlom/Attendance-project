@@ -72,14 +72,18 @@
           </div>
 
           <div v-if="!minimize" class="grid_area">
-            <div class="grid_wrapper">
+            <div
+              v-for="(coursetype, index) in course.coursetypes"
+              :key="index"
+              class="grid_wrapper"
+            >
               <div class="">
                 <div class="main_course_text">
-                  {{ course.coursetypes[0].name }}
+                  {{ coursetype.name }}
                 </div>
               </div>
               <div
-                v-for="eachcourse in course.coursetypes[0].courses"
+                v-for="eachcourse in coursetype.courses"
                 :key="eachcourse.id"
               >
                 <CourseCompVue
@@ -211,13 +215,13 @@
                 <select v-model="data.courseType" class="text2 grey" name="">
                   <option value="" disabled selected>Select a type</option>
                   <option value="departmental">Departmental Course</option>
-                  <option value="school course">School Course</option>
+                  <option value="school">School Course</option>
                 </select>
               </div>
             </div>
 
-            <div style="gap: 0.5rem" class="">
-              <div class="section_sub text-left">Class Schedule</div>
+            <div class="q-mt-lg">
+              <div class="section_sub_ text-left">Class Schedule</div>
             </div>
             <div style="gap: 0.5rem" class="row items-center no-wrap">
               <div class="text2 grey">Class times</div>
@@ -702,7 +706,7 @@ onMounted(async () => {
       });
 
       // organizedCourses now holds the structured data
-      // console.log(organizedCourses);
+      console.log(organizedCourses);
       courses.value = organizedCourses;
 
       // coursesByLevel is now organized by level and then by coursetype

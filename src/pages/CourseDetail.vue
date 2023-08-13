@@ -26,7 +26,6 @@
                 courseIsAdded ? 'offer minimize active' : 'offer minimize'
               "
               flat
-              style="width: fit-content"
               no-caps
             >
               <img
@@ -43,7 +42,7 @@
               {{ courseIsAdded ? "Added" : "Add" }} to courses you
               {{ store.userdetails.role === "lecturer" ? "teach" : "offer" }}
             </q-btn>
-            <!-- <q-separator v-if="store.userdetails.role === 'lecturer'" /> -->
+            <q-separator v-if="store.userdetails.role === 'lecturer'" />
             <div
               v-if="store.userdetails.role === 'lecturer'"
               style="gap: 1rem"
@@ -201,7 +200,7 @@
                     :columns="columns"
                     row-key="investor"
                     :filter="filter"
-                    class="sort_tables"
+                    class="sort_tables q-ma-md"
                     :loading="loading"
                     v-model:pagination="pagination"
                     @request="onRequest"
@@ -284,13 +283,11 @@
                       <q-td class="" :props="props">
                         <div class="table_btn">
                           <q-btn
-                            round
-                            dense
                             flat
                             @click="viewList(props.row)"
                             class="text2 grey"
                             no-caps
-                            size="md"
+                            size="sm"
                             :loading="loaders.save[props]"
                           >
                             <img
@@ -300,10 +297,8 @@
                             />
                             View
                           </q-btn>
-                          |
+
                           <q-btn
-                            round
-                            dense
                             no-caps
                             @click="addStu(props.row)"
                             flat
@@ -348,7 +343,7 @@
                     :columns="columns"
                     row-key="investor"
                     :filter="filter"
-                    class="sort_tables"
+                    class="sort_tables q-ma-md"
                     :loading="loading"
                     v-model:pagination="pagination"
                     @request="onRequest"
@@ -1141,7 +1136,7 @@
                 <select v-model="edit.courseType" class="text2 grey" name="">
                   <option value="" disabled selected>Select a type</option>
                   <option value="departmental">Departmental Course</option>
-                  <option value="school course">School Course</option>
+                  <option value="school">School Course</option>
                 </select>
               </div>
             </div>
@@ -1598,7 +1593,9 @@ const viewList = (data) => {
     .then((response) => {
       console.log(response);
       attendanceData.value = response.data.data;
-      singleRows.value = response.data.data.attendees;
+      singleRows.value = response.data.data.attendees.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      );
       Attendeeslist.value = true;
       Loading.hide();
     })
@@ -1712,7 +1709,9 @@ onMounted(async () => {
     // console.log(attendance);
 
     if (store.userdetails.role === "lecturer") {
-      rows.value = attendance.data.data;
+      rows.value = attendance.data.data.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      );
     } else {
       const attendancesWithPresent = attendance.data.data.map((attendance) => {
         const isPresent = attendance.attendees.includes(store.userdetails._id);
@@ -1725,7 +1724,9 @@ onMounted(async () => {
 
       // console.log(attendancesWithPresent);
 
-      studentsRow.value = attendancesWithPresent;
+      studentsRow.value = attendancesWithPresent.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      );
     }
 
     // console.log(attendancesWithPresent);

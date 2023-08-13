@@ -362,6 +362,7 @@ img {
 }
 .text2.black.lec {
   color: #344054;
+  font-size: 12px;
   // text-decoration-line: underline;
 }
 .text2.read {
@@ -399,6 +400,17 @@ hr {
   /* Shadow/xs */
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
   color: #6941c6;
+}
+.table_btn {
+  display: flex;
+  gap: 0.5rem;
+  width: 150px;
+}
+.table_btn .q-btn {
+  border: 1px solid #ced2da;
+  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+  // color: #637083;
+  background: #fff;
 }
 
 .offer.delete {
@@ -439,6 +451,7 @@ hr {
   font-size: 40px;
   font-style: normal;
   font-weight: 300;
+  text-transform: capitalize;
   line-height: 60px; /* 150% */
   letter-spacing: -0.8px;
 }
@@ -1134,10 +1147,6 @@ span.badge {
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
 }
 
-.table_btn {
-  width: 100px;
-}
-
 .otp_wrap > div {
   gap: 1rem;
 }
@@ -1309,6 +1318,14 @@ span.badge {
   .toptext {
     font-size: 30px;
     line-height: 35px; /* 125% */
+  }
+
+  .right.auth .q-btn {
+    width: 100% !important;
+  }
+
+  .q-card {
+    padding: 10px 10px 15px !important;
   }
   .grid.three .trash {
     top: 5%;

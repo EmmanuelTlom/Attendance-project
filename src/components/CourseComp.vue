@@ -241,7 +241,7 @@ const updateLecturerCourse = () => {
   border: 1px solid #eaecf0;
   background: #fff;
   max-width: 298px;
-  min-height: 340px;
+  min-height: 320px;
   position: relative;
 }
 
@@ -251,6 +251,10 @@ const updateLecturerCourse = () => {
   width: 90%;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.each > .text2 {
+  white-space: nowrap;
 }
 
 .top {

@@ -55,14 +55,18 @@
           </div>
 
           <div v-if="!minimize" class="grid_area">
-            <div class="grid_wrapper">
+            <div
+              v-for="(coursetype, index) in course.coursetypes"
+              :key="index"
+              class="grid_wrapper"
+            >
               <div class="">
                 <div class="main_course_text">
-                  {{ course.coursetypes[0].name }}
+                  {{ coursetype.name }}
                 </div>
               </div>
               <div
-                v-for="eachcourse in course.coursetypes[0].courses"
+                v-for="eachcourse in coursetype.courses"
                 :key="eachcourse.id"
               >
                 <CourseCompVue
@@ -71,20 +75,6 @@
                 />
               </div>
             </div>
-            <!-- <div class="grid_wrapper">
-            <div class="">
-              <div class="main_course_text">Departmental courses</div>
-            </div>
-            <div v-for="item in 3" :key="item.id">
-              <CourseCompVue
-                title="Computer information and geomatics"
-                lecturers="Dr. I.A Ayogu"
-                :saved="false"
-                location="CSC Software lab"
-                nextClass="Tuesday, 14:00 to 16:00"
-              />
-            </div>
-          </div> -->
           </div>
         </div>
       </div>
