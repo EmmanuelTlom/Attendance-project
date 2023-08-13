@@ -1090,9 +1090,14 @@ span.badge {
   border-radius: 8px;
   border: 1px solid #d0d5dd;
   width: fit-content;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
 }
 
+.three_btns .q-btn {
+  padding: 10px 20px;
+}
 .three_btns .q-btn.active {
   background: #7f56d9;
   color: #fff;
@@ -1250,6 +1255,10 @@ span.badge {
   .header {
     padding: 1.5rem 1rem 1rem 1rem;
   }
+
+  .three_btns {
+    width: 100%;
+  }
   .features .row {
     flex-wrap: wrap !important;
     text-align: center;
@@ -1286,6 +1295,9 @@ span.badge {
   }
   .time_date {
     flex-direction: column;
+  }
+  .btns > div {
+    width: 100%;
   }
 }
 @media (max-width: 600px) {

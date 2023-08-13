@@ -125,7 +125,7 @@
                     style="width: fit-content"
                     class="offer minimize"
                     flat
-                    @click="exportTable"
+                    @click="exportStudentTable"
                     no-caps
                   >
                     <img
@@ -956,7 +956,7 @@
             To authorise students to mark attendance, they have to scan this QR
             code below.
           </div>
-          <q-btn @click="getQr = false" class="close" flat no-caps>
+          <q-btn @click="downloadQR = false" class="close" flat no-caps>
             <img src="../assets/circle.svg" alt="" />
           </q-btn>
 
@@ -1147,7 +1147,7 @@
             </div>
 
             <div style="gap: 0.5rem" class="">
-              <div class="section_sub text-left">Class Schedule</div>
+              <div class="section_sub_ text-left">Class Schedule</div>
             </div>
             <div style="gap: 0.5rem" class="row items-center no-wrap">
               <div class="text2 grey">Class times</div>
@@ -1994,6 +1994,33 @@ const exportSingleTable = () => {
     .concat(
       singleRows.value.map((row) =>
         columnsTwo
+          .map((col) =>
+            wrapCsvValue(
+              typeof col.field === "function"
+                ? col.field(row)
+                : row[col.field === void 0 ? col.name : col.field],
+              col.format
+            )
+          )
+          .join(",")
+      )
+    )
+    .join("\r\n");
+  const status = exportFile(`Attendance sheet`, content, "text/csv");
+  if (status !== true) {
+    Notify.create({
+      message: "Browser denied file download...",
+      color: "negative",
+      icon: "warning",
+    });
+  }
+};
+const exportStudentTable = () => {
+  // naive encoding to csv format
+  const content = [columnsTwo.map((col) => wrapCsvValue(col.label))]
+    .concat(
+      studentsRow.value.map((row) =>
+        columns
           .map((col) =>
             wrapCsvValue(
               typeof col.field === "function"

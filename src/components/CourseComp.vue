@@ -49,7 +49,29 @@
             <!-- <div class="text2 black lec">{{ nextClass }}</div> -->
             <div v-if="course.schedules">
               <div v-if="course.schedules.length">
-                <div
+                <div class="text2 black lec">
+                  {{ course.schedules[0].day }} by
+                  {{
+                    course.schedules[0].startHour < 10
+                      ? `0${course.schedules[0].startHour}`
+                      : `${course.schedules[0].startHour}`
+                  }}:{{
+                    course.schedules[0].startMinute < 10
+                      ? `0${course.schedules[0].startMinute}`
+                      : `${course.schedules[0].startMinute}`
+                  }}
+                  to
+                  {{
+                    course.schedules[0].endHour < 10
+                      ? `0${course.schedules[0].endHour}`
+                      : `${course.schedules[0].endHour}`
+                  }}:{{
+                    course.schedules[0].endMinute < 10
+                      ? `0${course.schedules[0].endMinute}`
+                      : `${course.schedules[0].endMinute}`
+                  }}
+                </div>
+                <!-- <div
                   v-for="(schedule, index) in course.schedules"
                   :key="index"
                   class="text2 black lec"
@@ -74,7 +96,7 @@
                       ? `0${schedule.endMinute}`
                       : `${schedule.endMinute}`
                   }}
-                </div>
+                </div> -->
               </div>
               <div v-else class="text2 black lec">
                 This course does not have any schedules

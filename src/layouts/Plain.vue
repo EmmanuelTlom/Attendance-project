@@ -7,7 +7,19 @@
       <div class="row items-center no-wrap justify-between">
         <div style="gap: 2rem; flex: 2" class="row items-center no-wrap">
           <div class="logo">
-            <q-btn class="" flat no-wrap no-caps>
+            <q-btn
+              :to="{
+                name: `${
+                  store.userdetails.role === 'lecturer'
+                    ? 'lecturer-courses'
+                    : 'courses'
+                }`,
+              }"
+              class=""
+              flat
+              no-wrap
+              no-caps
+            >
               <div class="row items-center no-wrap">
                 <div class="logo_img">
                   <img src="../assets/dot.svg" alt="" />
@@ -187,10 +199,10 @@ export default {
   min-height: auto;
   transition: all 0.5s ease-in-out;
 }
-.q-item:hover,
+/* .q-item:hover,
 .q-item:hover {
   padding: 5px;
-}
+} */
 
 @media (max-width: 800px) {
   .q-item.tag_desc {
