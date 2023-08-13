@@ -124,6 +124,21 @@
                     style="width: fit-content"
                     class="offer minimize"
                     flat
+                    v-if="store.userdetails.role === 'lecturer'"
+                    @click="exportTable"
+                    no-caps
+                  >
+                    <img
+                      style="width: 16px; height: 16px"
+                      src="../assets/downloa.svg"
+                      alt=""
+                    />Export
+                  </q-btn>
+                  <q-btn
+                    v-if="store.userdetails.role === 'student'"
+                    style="width: fit-content"
+                    class="offer minimize"
+                    flat
                     @click="exportStudentTable"
                     no-caps
                   >
@@ -228,14 +243,14 @@
                         <div style="gap: 1rem" class="row items-center">
                           <div>
                             {{
-                              new Date(props.row.createdAt).toLocaleTimeString(
-                                "en-US",
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: true,
-                                }
-                              )
+                              new Date(
+                                new Date(props.row.createdAt).getTime() -
+                                  60 * 60 * 1000
+                              ).toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
                             }}
                           </div>
                         </div>
@@ -287,6 +302,7 @@
                             @click="viewList(props.row)"
                             class="text2 grey"
                             no-caps
+                            no-wrap
                             size="sm"
                             :loading="loaders.save[props]"
                           >
@@ -304,6 +320,7 @@
                             flat
                             class="text2 grey q-pr-md"
                             size="sm"
+                            no-wrap
                             :loading="loaders.save[props]"
                           >
                             <img
@@ -371,6 +388,16 @@
                         <div style="gap: 1rem" class="row items-center">
                           <div>
                             {{
+                              new Date(
+                                new Date(props.row.createdAt).getTime() -
+                                  60 * 60 * 1000
+                              ).toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                            }}
+                            <!-- {{
                               new Date(props.row.createdAt).toLocaleTimeString(
                                 "en-US",
                                 {
@@ -379,7 +406,7 @@
                                   hour12: true,
                                 }
                               )
-                            }}
+                            }} -->
                           </div>
                         </div>
                       </q-td>
@@ -750,14 +777,14 @@
                         )
                       }},
                       {{
-                        new Date(props.row.createdAt).toLocaleTimeString(
-                          "en-US",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          }
-                        )
+                        new Date(
+                          new Date(props.row.createdAt).getTime() -
+                            60 * 60 * 1000
+                        ).toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
                       }}
                     </div>
                   </div>
@@ -766,7 +793,7 @@
               <template v-slot:body-cell-status="props">
                 <q-td :props="props">
                   <!-- {{ props.row }} -->
-                  <div v-if="!props.row.present" class="status present">
+                  <div v-if="props.row.present" class="status present">
                     <img
                       style="width: 8px; height: 8px"
                       src="../assets/dotsuccess.svg"
@@ -774,7 +801,7 @@
                       class="q-mr-sm"
                     />Present
                   </div>
-                  <div v-if="props.row.present" class="status absent">
+                  <div v-if="!props.row.present" class="status absent">
                     <img
                       class="q-mr-sm"
                       style="width: 8px; height: 8px"
@@ -1421,8 +1448,13 @@ const columns = [
     required: true,
     label: "Date",
     align: "left",
-    field: "date",
-    // field: (row, index) => console.log(row, index),
+    // field: "createdAt",
+    field: (row, index) =>
+      `${new Date(row.createdAt).toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })}`,
     sortable: true,
   },
 
@@ -1431,7 +1463,14 @@ const columns = [
     required: true,
     label: "Time",
     align: "left",
-    field: "time",
+    field: (row, index) =>
+      ` ${new Date(
+        new Date(row.createdAt).getTime() - 60 * 60 * 1000
+      ).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })}`,
     sortable: true,
   },
   {
@@ -1439,7 +1478,7 @@ const columns = [
     required: true,
     label: "Presence",
     align: "left",
-    field: "status",
+    field: (row) => `${row.attendees.length} student(s) present`,
     sortable: true,
   },
 
@@ -1459,7 +1498,7 @@ const columnsTwo = [
     label: "Name",
     align: "left",
     field: "name",
-    // field: (row, index) => console.log(row, index),
+    field: (row, index) => `${row.firstName} ${row.lastName}`,
     sortable: true,
   },
 
@@ -1468,7 +1507,19 @@ const columnsTwo = [
     required: true,
     label: "Timestamp",
     align: "left",
-    field: "time",
+    field: (row, index) =>
+      `${new Date(row.createdAt).toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })} ${new Date(
+        new Date(row.createdAt).getTime() - 60 * 60 * 1000
+      ).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })}`,
+    // field: "createdAt",
     sortable: true,
   },
   {
@@ -1476,7 +1527,7 @@ const columnsTwo = [
     required: true,
     label: "Presence",
     align: "left",
-    field: "status",
+    field: "present",
     sortable: true,
   },
 ];
@@ -1593,9 +1644,9 @@ const viewList = (data) => {
     .then((response) => {
       console.log(response);
       attendanceData.value = response.data.data;
-      singleRows.value = response.data.data.attendees.sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-      );
+      singleRows.value = response.data.data.attendees
+        .map((attendee) => ({ ...attendee, present: true }))
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       Attendeeslist.value = true;
       Loading.hide();
     })
@@ -1956,6 +2007,7 @@ const updateLecturerCourse = () => {
     });
 };
 function wrapCsvValue(val, formatFn) {
+  // console.log(val);
   let formatted = formatFn !== void 0 ? formatFn(val) : val;
   formatted =
     formatted === void 0 || formatted === null ? "" : String(formatted);
@@ -1966,7 +2018,7 @@ const exportTable = () => {
   // naive encoding to csv format
   const content = [columns.map((col) => wrapCsvValue(col.label))]
     .concat(
-      rows.value.map((row) =>
+      sortedAttendanceData.value.map((row) =>
         columns
           .map((col) =>
             wrapCsvValue(
@@ -1993,7 +2045,7 @@ const exportSingleTable = () => {
   // naive encoding to csv format
   const content = [columnsTwo.map((col) => wrapCsvValue(col.label))]
     .concat(
-      singleRows.value.map((row) =>
+      sortedSingleAttendanceData.value.map((row) =>
         columnsTwo
           .map((col) =>
             wrapCsvValue(
@@ -2018,9 +2070,9 @@ const exportSingleTable = () => {
 };
 const exportStudentTable = () => {
   // naive encoding to csv format
-  const content = [columnsTwo.map((col) => wrapCsvValue(col.label))]
+  const content = [columns.map((col) => wrapCsvValue(col.label))]
     .concat(
-      studentsRow.value.map((row) =>
+      sortedStudentAttendanceData.value.map((row) =>
         columns
           .map((col) =>
             wrapCsvValue(
@@ -2034,6 +2086,8 @@ const exportStudentTable = () => {
       )
     )
     .join("\r\n");
+
+  // console.log(content);
   const status = exportFile(`Attendance sheet`, content, "text/csv");
   if (status !== true) {
     Notify.create({
