@@ -1646,7 +1646,7 @@ const viewList = (data) => {
       attendanceData.value = response.data.data;
       singleRows.value = response.data.data.attendees
         .map((attendee) => ({ ...attendee, present: true }))
-        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       Attendeeslist.value = true;
       Loading.hide();
     })
@@ -1761,7 +1761,7 @@ onMounted(async () => {
 
     if (store.userdetails.role === "lecturer") {
       rows.value = attendance.data.data.sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
     } else {
       const attendancesWithPresent = attendance.data.data.map((attendance) => {
@@ -1776,7 +1776,7 @@ onMounted(async () => {
       // console.log(attendancesWithPresent);
 
       studentsRow.value = attendancesWithPresent.sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
     }
 
