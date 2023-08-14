@@ -8,10 +8,10 @@
         <div class="row items-center no-wrap justify-between">
           <div class="left">
             <div class="all_main">My courses</div>
-            <div class="text2">
+            <!-- <div class="text2">
               List of all departmental and school courses for computer science.
             </div>
-            <div class="text2">change to a different department</div>
+            <div class="text2">change to a different department</div> -->
           </div>
           <div class="right auth">
             <div class="input">
