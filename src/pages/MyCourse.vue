@@ -40,16 +40,16 @@
             <img
               v-if="minimize"
               style="width: 20px; height: 20px"
-              src="../assets/chev.svg"
+              src="../assets/chevd.svg"
               alt=""
             />
             <img
               v-else
               style="width: 20px; height: 20px"
-              src="../assets/chevd.svg"
+              src="../assets/chev.svg"
               alt=""
             />
-            Minimize
+            {{ minimize ? "Maximize" : "Minimize" }}
           </q-btn>
         </div>
 
