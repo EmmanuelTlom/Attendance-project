@@ -7,11 +7,11 @@
       <div class="hero">
         <div class="card text-center">
           <div class="top">
-            <div class="all_main">{{ course.courseCode }}</div>
+            <div class="all_main q-pt-sm">{{ course.courseCode }}</div>
           </div>
 
           <div class="q-pa-sm">
-            <div class="title maindesc">
+            <div style="margin: 0" class="title maindesc">
               {{ course.title }}
             </div>
             <q-btn
@@ -42,7 +42,10 @@
               {{ courseIsAdded ? "Added" : "Add" }} to courses you
               {{ store.userdetails.role === "lecturer" ? "teach" : "offer" }}
             </q-btn>
-            <q-separator v-if="store.userdetails.role === 'lecturer'" />
+            <q-separator
+              class="q-my-sm"
+              v-if="store.userdetails.role === 'lecturer'"
+            />
             <div
               v-if="store.userdetails.role === 'lecturer'"
               style="gap: 1rem"
@@ -83,7 +86,13 @@
         </div>
       </div>
 
-      <div class="main_area container">
+      <div
+        :class="
+          store.userdetails.role === 'lecturer'
+            ? 'main_area lecr container'
+            : 'main_area container'
+        "
+      >
         <div class="main_wrap">
           <div class="left">
             <div class="q-my-lg">
@@ -523,47 +532,51 @@
 
             <q-separator />
 
-            <div v-if="course.lecturers" class="div">
-              <div v-if="course.lecturers.length">
-                <div
-                  v-for="(lecturer, index) in course.lecturers"
-                  :key="index"
-                  class="div_"
-                >
-                  <div class="img">
-                    <img
-                      v-if="lecturer.avatar"
-                      style="width: 56px; height: 56px; border-radius: 100%"
-                      :src="lecturer.avatar"
-                      alt=""
-                    />
-                    <img
-                      v-else
-                      style="width: 56px; height: 56px; border-radius: 100%"
-                      src="../assets/usersvg.svg"
-                      alt=""
-                    />
-                    <img
-                      style="width: 18px; height: 18px; border-radius: 100%"
-                      class="verify"
-                      src="../assets/verify.svg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="details">
-                    <div class="text4 small">
-                      {{ lecturer.firstName }} {{ lecturer.lastName }}
+            <div class="div">
+              <div class="text2 grey">Lecturers</div>
+              <div v-if="course.lecturers">
+                <div v-if="course.lecturers.length">
+                  <div
+                    v-for="(lecturer, index) in course.lecturers"
+                    :key="index"
+                    class="div_"
+                  >
+                    <div class="img">
+                      <img
+                        v-if="lecturer.avatar"
+                        style="width: 56px; height: 56px; border-radius: 100%"
+                        :src="lecturer.avatar"
+                        alt=""
+                      />
+                      <img
+                        v-else
+                        style="width: 56px; height: 56px; border-radius: 100%"
+                        src="../assets/usersvg.svg"
+                        alt=""
+                      />
+                      <img
+                        style="width: 18px; height: 18px; border-radius: 100%"
+                        class="verify"
+                        src="../assets/verify.svg"
+                        alt=""
+                      />
                     </div>
+                    <div class="details">
+                      <div class="text4 small">
+                        {{ lecturer.firstName }} {{ lecturer.lastName }}
+                      </div>
 
-                    <div class="text2 grey comments">{{ lecturer.email }}</div>
+                      <div class="text2 grey comments">
+                        {{ lecturer.email }}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div v-else class="text2">
-                This course does not have any lecturers
+                <div v-else class="text2">
+                  This course does not have any lecturers
+                </div>
               </div>
             </div>
-
             <q-separator />
 
             <div class="div">

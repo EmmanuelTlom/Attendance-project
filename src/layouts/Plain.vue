@@ -21,10 +21,10 @@
               no-caps
             >
               <div class="row items-center no-wrap">
-                <div class="logo_img">
-                  <img src="../assets/dot.svg" alt="" />
+                <div class="logoo_img row">
+                  <img src="../assets/log.svg" alt="" />
                 </div>
-                <div class="tag_desc q-ml-sm">Presence</div>
+                <!-- <div class="tag_desc q-ml-sm">Presence</div> -->
               </div>
             </q-btn>
           </div>
@@ -120,27 +120,69 @@
 
     <!-- (Optional) A Drawer; you can add one more with side="right" or change this one's side -->
     <q-drawer
-      :width="200"
+      :width="300"
       v-model="leftDrawerOpen"
       side="left"
       bordered
-      class="bg-grey-2"
+      class="bg-white"
     >
       <!-- QScrollArea is optional -->
-      <q-scroll-area class="fit q-pa-sm">
+      <q-scroll-area class="fit">
         <!-- Content here -->
-        <q-list>
+        <div
+          style="gap: 2rem; flex: 2"
+          class="row justify-between q-pt-md q-pb-sm items-center no-wrap"
+        >
+          <div class="logo">
+            <q-btn
+              :to="{
+                name: `${
+                  store.userdetails.role === 'lecturer'
+                    ? 'lecturer-courses'
+                    : 'courses'
+                }`,
+              }"
+              class=""
+              flat
+              no-wrap
+              no-caps
+            >
+              <div class="row items-center no-wrap">
+                <div class="logo_img row">
+                  <img src="../assets/logoo.svg" alt="" />
+                </div>
+                <!-- <div class="tag_desc q-ml-sm">Presence</div> -->
+              </div>
+            </q-btn>
+          </div>
+
+          <q-btn @click="toggleLeftDrawer" flat no-caps no-wrap>
+            <img
+              style="width: 20px; height: 20px"
+              src="../assets/x.svg"
+              alt=""
+            />
+          </q-btn>
+        </div>
+        <q-separator class="q-mb-md" />
+        <q-list class="q-mt-lg list_items">
           <q-item
             clickable
             :to="{
               name: 'courses',
             }"
+            class="q-mb-sm"
             v-ripple
           >
-            <q-item-section avatar>
-              <q-icon name="fa-solid fa-book" />
+            <q-item-section style="min-width: auto; padding-right: 10px" avatar>
+              <!-- <img
+                style="width: 24px; height: 24px"
+                src="../assets/bookmark.svg"
+                alt=""
+              /> -->
+              <BookAddSvgVue style="width: 24px; height: 24px" />
             </q-item-section>
-            <q-item-section> Courses </q-item-section>
+            <q-item-section class="tag_desc"> All courses </q-item-section>
           </q-item>
           <q-item
             clickable
@@ -152,10 +194,15 @@
             }"
             v-ripple
           >
-            <q-item-section avatar>
-              <q-icon name="fa-solid fa-book-open" />
+            <q-item-section style="min-width: auto; padding-right: 10px" avatar>
+              <!-- <img
+                style="width: 24px; height: 24px"
+                src="../assets/bookmarkadd.svg"
+                alt=""
+              /> -->
+              <BookSvgVue style="width: 24px; height: 24px" />
             </q-item-section>
-            <q-item-section> My Courses </q-item-section>
+            <q-item-section class="tag_desc"> Your courses </q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>
@@ -171,6 +218,8 @@
 <script>
 import { ref } from "vue";
 import { useMyAuthStore } from "src/stores/auth";
+import BookAddSvgVue from "src/components/BookAddSvg.vue";
+import BookSvgVue from "src/components/BookSvg.vue";
 let store = useMyAuthStore();
 export default {
   // name: 'LayoutName',
@@ -186,6 +235,11 @@ export default {
       },
     };
   },
+
+  components: {
+    BookAddSvgVue,
+    BookSvgVue,
+  },
 };
 </script>
 
@@ -197,6 +251,7 @@ export default {
 .q-item {
   white-space: nowrap;
   min-height: auto;
+  align-items: center;
   transition: all 0.5s ease-in-out;
 }
 /* .q-item:hover,

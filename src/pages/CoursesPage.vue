@@ -37,24 +37,24 @@
           <div style="gap: 0.5rem" class="row items-center no-wrap">
             <div class="section_sub">{{ course.level }} Courses</div>
             <q-separator class="hr" />
-            <q-btn @click="minimize = !minimize" flat no-caps>
+            <q-btn @click="toggleMinimized(index)" flat no-caps>
               <img
-                v-if="minimize"
+                v-if="course.minimized"
                 style="width: 20px; height: 20px"
-                src="../assets/chev.svg"
+                src="../assets/chevd.svg"
                 alt=""
               />
               <img
                 v-else
                 style="width: 20px; height: 20px"
-                src="../assets/chevd.svg"
+                src="../assets/chev.svg"
                 alt=""
               />
-              Minimize
+              {{ course.minimized ? "Maximize" : "Minimize" }}
             </q-btn>
           </div>
 
-          <div v-if="!minimize" class="grid_area">
+          <div v-if="!course.minimized" class="grid_area">
             <div
               v-for="(coursetype, index) in course.coursetypes"
               :key="index"
@@ -186,7 +186,10 @@ onMounted(async () => {
 
       // organizedCourses now holds the structured data
       // console.log(organizedCourses);
-      courses.value = organizedCourses;
+      courses.value = organizedCourses.map((course) => ({
+        ...course,
+        minimized: false,
+      }));
 
       // coursesByLevel is now organized by level and then by coursetype
       // console.log([coursesByLevel]);
@@ -199,7 +202,9 @@ onMounted(async () => {
     console.error(error);
   }
 });
-
+const toggleMinimized = (index) => {
+  courses.value[index].minimized = !courses.value[index].minimized;
+};
 const refreshPage = () => {
   loading.value = true;
   api
@@ -234,7 +239,10 @@ const refreshPage = () => {
 
         // organizedCourses now holds the structured data
         // console.log(organizedCourses);
-        courses.value = organizedCourses;
+        courses.value = organizedCourses.map((course) => ({
+          ...course,
+          minimized: false,
+        }));
 
         // coursesByLevel is now organized by level and then by coursetype
         // console.log([coursesByLevel]);
